@@ -1,0 +1,862 @@
+﻿{
+    "ac4145290a471d8c6b4cd67b1512fe35332c236b":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "release-skills",
+                                                     "slug":  "release-skills",
+                                                     "summary":  "通用发布工作流，支持多语言和多种项目类型。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "a4d2b1d5e16714ed68b41dd0a00c47a9590b9112",
+                                                     "updated_at":  "2026-05-06T13:09:19.485Z"
+                                                 },
+    "c1ce157e60bec28e15c72827816917bef835ba77":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-article-illustrator",
+                                                     "slug":  "baoyu-article-illustrator",
+                                                     "summary":  "分析文章结构，生成并插入配图，保持风格一致。",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "8c2364e767724b7c280e536410e378f1e5566c5b",
+                                                     "updated_at":  "2026-05-06T13:09:19.484Z"
+                                                 },
+    "23732e22d02509f8a676957acb8d8baccd31b279":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-comic",
+                                                     "slug":  "baoyu-comic",
+                                                     "summary":  "生成知识漫画，支持多种风格和布局。",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "1766ab33d1298e681664f26158f9b966aeba5666",
+                                                     "updated_at":  "2026-05-06T13:09:19.483Z"
+                                                 },
+    "57027550c5cc0d51b32130e47a4a7acf0dc1b855":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-compress-image",
+                                                     "slug":  "baoyu-compress-image",
+                                                     "summary":  "压缩图片，优化文件大小，支持WebP/PNG。",
+                                                     "category":  "网络信息",
+                                                     "source_hash":  "3dc2f2924b59941a4255aba34f7dd0f74495e86e",
+                                                     "updated_at":  "2026-05-06T13:09:19.482Z"
+                                                 },
+    "af44e65eff28f037278e036116299c2ff6ed8097":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-cover-image",
+                                                     "slug":  "baoyu-cover-image",
+                                                     "summary":  "生成文章封面图，支持多维度定制。",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "8dcebf7dfb3051ec61bae09f0dd2b4a7814abfe9",
+                                                     "updated_at":  "2026-05-06T13:09:19.481Z"
+                                                 },
+    "bd9cb74c30cc524a55a12be3208b673b6d268e69":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-danger-gemini-web",
+                                                     "slug":  "baoyu-danger-gemini-web",
+                                                     "summary":  "通过Gemini Web API生成图像和文本，支持多轮对话。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "cc595bcde6c2dd5f0ccdfda3c694b56cc2fd9143",
+                                                     "updated_at":  "2026-05-06T13:09:19.479Z"
+                                                 },
+    "7ad88bb3b75ae4be51105aed8788a06c63792853":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-danger-x-to-markdown",
+                                                     "slug":  "baoyu-danger-x-to-markdown",
+                                                     "summary":  "将X/Twitter内容转换为Markdown格式。",
+                                                     "category":  "文档数据",
+                                                     "source_hash":  "c7803f406fa2b5153c7516d993f80c82ace487ce",
+                                                     "updated_at":  "2026-05-06T13:09:19.478Z"
+                                                 },
+    "1d2ffaa63091b94809f8648225f2edbecc8eade1":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-diagram",
+                                                     "slug":  "baoyu-diagram",
+                                                     "summary":  "生成专业暗色SVG图表，支持多种类型。",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "1dd543e5dd96e03dcea042e190fd37a57bec83a4",
+                                                     "updated_at":  "2026-05-06T13:09:19.476Z"
+                                                 },
+    "3cba2ed1f5c3ad462822d73fdffa54fa931f2ef9":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-format-markdown",
+                                                     "slug":  "baoyu-format-markdown",
+                                                     "summary":  "格式化Markdown/纯文本，优化排版和结构。",
+                                                     "category":  "文档数据",
+                                                     "source_hash":  "7cfbda8261cbed510d37369f03aaa165b3067dda",
+                                                     "updated_at":  "2026-05-06T13:09:19.475Z"
+                                                 },
+    "9a2d985d7ec6ad8a7ad4c1d774e6a3ebcf90d9b1":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-image-cards",
+                                                     "slug":  "baoyu-image-cards",
+                                                     "summary":  "生成多风格社交媒体信息图卡片系列",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "152bd82158a8f2b6c49d9b08134fd50049f05e1d",
+                                                     "updated_at":  "2026-05-06T13:09:19.474Z"
+                                                 },
+    "893fbf2e87ada36310f6348559a487197bb67fe1":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-image-gen",
+                                                     "slug":  "baoyu-image-gen",
+                                                     "summary":  "多平台AI图像生成，支持文本与参考图。",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "99d0f2cede3251ba897dfcf7d417c3dca62b746f",
+                                                     "updated_at":  "2026-05-06T13:09:19.473Z"
+                                                 },
+    "dfc338b4342cc62b20696740d77152317a9fadfb":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-imagine",
+                                                     "slug":  "baoyu-imagine",
+                                                     "summary":  "AI图像生成，支持多平台、多功能",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "d21e22c380ef858021f3426709609231a7d3e482",
+                                                     "updated_at":  "2026-05-06T13:09:19.472Z"
+                                                 },
+    "ce3c3738d9800628b299a86fcd699f86836cc01c":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-infographic",
+                                                     "slug":  "baoyu-infographic",
+                                                     "summary":  "生成专业信息图，智能推荐布局与风格。",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "c291cc610eac843e75d74663b1ad6698c3396b82",
+                                                     "updated_at":  "2026-05-06T13:09:19.470Z"
+                                                 },
+    "8bb881bb7eea5e185682eadb42665934c12ef863":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-markdown-to-html",
+                                                     "slug":  "baoyu-markdown-to-html",
+                                                     "summary":  "将 Markdown 转换为微信兼容的样式 HTML。",
+                                                     "category":  "文档数据",
+                                                     "source_hash":  "8de415be63de604f253ece4a01dab52407a7adb2",
+                                                     "updated_at":  "2026-05-06T13:09:19.469Z"
+                                                 },
+    "04de07909f81d51785a208d41925b028bce13076":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-post-to-wechat",
+                                                     "slug":  "baoyu-post-to-wechat",
+                                                     "summary":  "发布内容到微信公众号，支持文章和图文。",
+                                                     "category":  "网络信息",
+                                                     "source_hash":  "373c298dc7060fb1ff84b372ab019ea1d7fd2d1b",
+                                                     "updated_at":  "2026-05-06T13:09:19.468Z"
+                                                 },
+    "57887e3b5654db48f9dd5345cd9770fdd53006f8":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-post-to-weibo",
+                                                     "slug":  "baoyu-post-to-weibo",
+                                                     "summary":  "发布内容到微博，支持普通帖和头条文章",
+                                                     "category":  "网络信息",
+                                                     "source_hash":  "976801dab0816adceb76937ecbdb40f2ae07d0e2",
+                                                     "updated_at":  "2026-05-06T13:09:19.467Z"
+                                                 },
+    "41b67974507278e8b249190728491b52efd8142c":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-post-to-x",
+                                                     "slug":  "baoyu-post-to-x",
+                                                     "summary":  "通过Chrome发布内容到X（Twitter）",
+                                                     "category":  "网络信息",
+                                                     "source_hash":  "05ea067714dbc12b17219b7545e6abe10d197fad",
+                                                     "updated_at":  "2026-05-06T13:09:19.465Z"
+                                                 },
+    "1d8a0c1ce60cb07353412fbefe3bdb19d6773aae":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-slide-deck",
+                                                     "slug":  "baoyu-slide-deck",
+                                                     "summary":  "从内容生成专业幻灯片图片",
+                                                     "category":  "文档数据",
+                                                     "source_hash":  "32d3ed966dda52e5372dc1ed7667113f07cf222a",
+                                                     "updated_at":  "2026-05-06T13:09:19.463Z"
+                                                 },
+    "08de7cf0442cb98797901acde19f620217e90237":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-translate",
+                                                     "slug":  "baoyu-translate",
+                                                     "summary":  "多模式文档翻译，支持术语定制。",
+                                                     "category":  "文档数据",
+                                                     "source_hash":  "1a8828b301d7e1548c2709a73adb170312200f41",
+                                                     "updated_at":  "2026-05-06T13:09:19.462Z"
+                                                 },
+    "8cb10f267bebe47c4d3a878d6dd2e66a7c7cb578":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-url-to-markdown",
+                                                     "slug":  "baoyu-url-to-markdown",
+                                                     "summary":  "抓取网页内容并转换为Markdown文档",
+                                                     "category":  "网络信息",
+                                                     "source_hash":  "983c4df7deed46e1c88dfea95aaacb649bcd6d8b",
+                                                     "updated_at":  "2026-05-06T13:09:19.461Z"
+                                                 },
+    "94cd1aa1f5036b775dc51e86515a40f83d9d6491":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-xhs-images",
+                                                     "slug":  "baoyu-xhs-images",
+                                                     "summary":  "生成小红书图片卡片系列，多风格布局",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "ff22045f1ba5c38d864d1c650cdb5ed8ad889498",
+                                                     "updated_at":  "2026-05-06T13:09:19.459Z"
+                                                 },
+    "5d933b852b056ceb8eba55b34504029a291d945f":  {
+                                                     "repo":  "baoyu-skills",
+                                                     "repo_url":  "https://github.com/JimLiu/baoyu-skills",
+                                                     "name":  "baoyu-youtube-transcript",
+                                                     "slug":  "baoyu-youtube-transcript",
+                                                     "summary":  "下载YouTube视频字幕、封面，支持多语言和翻译。",
+                                                     "category":  "文档数据",
+                                                     "source_hash":  "f6dd1b2dbecdf853f440dfa22a93249dbb9eb436",
+                                                     "updated_at":  "2026-05-06T13:09:19.457Z"
+                                                 },
+    "f3c7ebf9ddd4727d6e027ca0db1b439622c2ecc4":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "algorithmic-art",
+                                                     "slug":  "algorithmic-art",
+                                                     "summary":  "基于哲学概念，用p5.js创作原创算法艺术。",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "8990dd4296d4af244d140ec41c1701ef07c11354",
+                                                     "updated_at":  "2026-05-06T13:09:41.112Z"
+                                                 },
+    "01218c249c6214ba30600e5ef2a88e53cce9351f":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "brand-guidelines",
+                                                     "slug":  "brand-guidelines",
+                                                     "summary":  "应用Anthropic品牌视觉规范进行设计。",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "9f8214b4b2f4e57bbb67dc363e72e0aecd4a5066",
+                                                     "updated_at":  "2026-05-06T13:09:34.672Z"
+                                                 },
+    "c66c8278cabf7ad1694b2cf6c38414cc4f1712a9":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "canvas-design",
+                                                     "slug":  "canvas-design",
+                                                     "summary":  "基于设计哲学创作精美视觉艺术，输出PNG/PDF，强调精湛工艺与视觉表达。",
+                                                     "category":  "文档数据",
+                                                     "source_hash":  "306d1b7e82adc6aa232f03f084cbdef22e85ac60",
+                                                     "updated_at":  "2026-05-06T13:09:27.052Z"
+                                                 },
+    "7ad51646feec395afa0eaffb257a12f97172cd17":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "claude-api",
+                                                     "slug":  "claude-api",
+                                                     "summary":  "用于构建、调试和优化基于Claude API/Anthropic SDK的应用程序，支持多种语言和高级功能。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "f3b4da0d5f29567ba4be13c34b292bd5cf525fae",
+                                                     "updated_at":  "2026-05-06T13:09:19.503Z"
+                                                 },
+    "5006b9be4aac2b429510f1994268afac12ea865d":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "doc-coauthoring",
+                                                     "slug":  "doc-coauthoring",
+                                                     "summary":  "协助用户协作撰写文档，包括提案、规范等。",
+                                                     "category":  "文档数据",
+                                                     "source_hash":  "39f6c5a7ea420dc4efbc3859bba98a39517f869f",
+                                                     "updated_at":  "2026-05-06T13:09:19.502Z"
+                                                 },
+    "e4e9adba731143b3ab4d8e594bce121072e004ac":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "docx",
+                                                     "slug":  "docx",
+                                                     "summary":  "处理Word文档（.docx）的创建、编辑与分析。",
+                                                     "category":  "文档数据",
+                                                     "source_hash":  "2435f59719f50330b06fb82942f7348214299ec4",
+                                                     "updated_at":  "2026-05-06T13:09:19.501Z"
+                                                 },
+    "49a9001afb7db4f0b34598bc406276e9e21d9cc7":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "frontend-design",
+                                                     "slug":  "frontend-design",
+                                                     "summary":  "创建独特高质量前端界面",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "9b38432ec39ba7ad2ff52fd0cb9c28d12afa58e5",
+                                                     "updated_at":  "2026-05-06T13:09:19.500Z"
+                                                 },
+    "a6eb285240095a612fff27c0499dfd52523aa3a8":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "internal-comms",
+                                                     "slug":  "internal-comms",
+                                                     "summary":  "撰写各类内部沟通材料",
+                                                     "category":  "沟通协作",
+                                                     "source_hash":  "22b97d1391569d5feb67562d8ebd522d89441807",
+                                                     "updated_at":  "2026-05-06T13:09:19.498Z"
+                                                 },
+    "6245e344a9073532e86299d35849abdd46dec678":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "mcp-builder",
+                                                     "slug":  "mcp-builder",
+                                                     "summary":  "构建高质量MCP服务器，赋能LLM与外部服务交互。",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "16abcc05e9566ab6dfac7f836522bd2db765f6e3",
+                                                     "updated_at":  "2026-05-06T13:09:19.497Z"
+                                                 },
+    "6d11727c58517dfdcb1b60a239db4bfaf1d56b1b":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "pdf",
+                                                     "slug":  "pdf",
+                                                     "summary":  "处理PDF文件，包括读写、编辑、转换和提取内容。",
+                                                     "category":  "文档数据",
+                                                     "source_hash":  "78faf32907a99e1cb784f1a7173f1076a1248371",
+                                                     "updated_at":  "2026-05-06T13:09:19.496Z"
+                                                 },
+    "7200857e1425c7212e5f6d6c8b85e99ca7dbad02":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "pptx",
+                                                     "slug":  "pptx",
+                                                     "summary":  "处理、创建、编辑、读取PPTX文件，并提供设计指导。",
+                                                     "category":  "文档数据",
+                                                     "source_hash":  "4b48e5a7885959ec6a1f859c266760a67ba03764",
+                                                     "updated_at":  "2026-05-06T13:09:19.495Z"
+                                                 },
+    "4111967af167253a8363a4e24a52bf1155bc5804":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "skill-creator",
+                                                     "slug":  "skill-creator",
+                                                     "summary":  "创建、优化和评估AI技能。",
+                                                     "category":  "Agent 管理",
+                                                     "source_hash":  "5861deebf4f4c65fe301c0b2f233b9b32d886b07",
+                                                     "updated_at":  "2026-05-06T13:09:19.494Z"
+                                                 },
+    "96a773125964a1b6ca42591d1de3c71604f28b32":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "slack-gif-creator",
+                                                     "slug":  "slack-gif-creator",
+                                                     "summary":  "为Slack创建和优化动画GIF的工具和知识。",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "5c6cdffcba1c71245aa363ed2039f212d3adfeb8",
+                                                     "updated_at":  "2026-05-06T13:09:19.493Z"
+                                                 },
+    "01d64325574fdde06aaf6e5a7780faeb2536229e":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "theme-factory",
+                                                     "slug":  "theme-factory",
+                                                     "summary":  "为文档、演示文稿等应用主题样式。",
+                                                     "category":  "文档数据",
+                                                     "source_hash":  "14c5b35d9ec2bb80d84f32d5ec3fd724ff5bdb8b",
+                                                     "updated_at":  "2026-05-06T13:09:19.491Z"
+                                                 },
+    "1804e37f86d51e4fbf0ae7ca79065116a868a0ae":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "web-artifacts-builder",
+                                                     "slug":  "web-artifacts-builder",
+                                                     "summary":  "构建复杂Claude.ai HTML前端组件",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "61bc79b415428b88a7ffe3a74a23e2400879b523",
+                                                     "updated_at":  "2026-05-06T13:09:19.490Z"
+                                                 },
+    "64971d609c83df864879e77d3452d1d19ca52bca":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "webapp-testing",
+                                                     "slug":  "webapp-testing",
+                                                     "summary":  "使用Playwright测试本地Web应用功能",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "e3ea110f6a40ca8062b3475efc896904c814dd6e",
+                                                     "updated_at":  "2026-05-06T13:09:19.489Z"
+                                                 },
+    "76ec888771baed3d92af718aa48547fc9aa9a3da":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "xlsx",
+                                                     "slug":  "xlsx",
+                                                     "summary":  "创建、编辑和分析Excel及表格文件",
+                                                     "category":  "文档数据",
+                                                     "source_hash":  "e0372bb08eb76a8aafc05d7431a02377aba05d05",
+                                                     "updated_at":  "2026-05-06T13:09:19.487Z"
+                                                 },
+    "2643b0db84b20f1d500e139baca103f613c21aea":  {
+                                                     "repo":  "skills",
+                                                     "repo_url":  "https://github.com/anthropics/skills",
+                                                     "name":  "template",
+                                                     "slug":  "template",
+                                                     "summary":  "技能模板，用于定义新能力",
+                                                     "category":  "Agent 管理",
+                                                     "source_hash":  "69cf752f41cd1ebd7b0cf07f409a89b3344bf780",
+                                                     "updated_at":  "2026-05-06T13:09:19.486Z"
+                                                 },
+    "c0db44fae9018e3bdd5505ef05cec16668e845ac":  {
+                                                     "repo":  "myclaude",
+                                                     "repo_url":  "https://github.com/cexll/myclaude",
+                                                     "name":  "browser",
+                                                     "slug":  "browser",
+                                                     "summary":  "本技能提供本地浏览器自动化，包括启动、导航、JS执行、截图和DOM选择。",
+                                                     "category":  "网络信息",
+                                                     "source_hash":  "70bfa4b83ed8ff867219e6270570c1db06a93233",
+                                                     "updated_at":  "2026-05-06T13:09:47.167Z"
+                                                 },
+    "5446697cd60d25f5c32c585f700767d4631356a8":  {
+                                                     "repo":  "myclaude",
+                                                     "repo_url":  "https://github.com/cexll/myclaude",
+                                                     "name":  "codeagent",
+                                                     "slug":  "codeagent",
+                                                     "summary":  "多后端AI代码任务执行与编排。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "4674ffa213516d09638b20c6ffe199ce8351a02d",
+                                                     "updated_at":  "2026-05-06T13:09:47.164Z"
+                                                 },
+    "271eb5af01c63391b24a6fbc74c313e6cdff1f65":  {
+                                                     "repo":  "myclaude",
+                                                     "repo_url":  "https://github.com/cexll/myclaude",
+                                                     "name":  "dev",
+                                                     "slug":  "dev",
+                                                     "summary":  "dev技能提供轻量级端到端开发流程，含需求澄清、智能后端选型、并行执行及90%测试覆盖。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "899645e719a7f384cd7b741db909362be5a2f634",
+                                                     "updated_at":  "2026-05-06T13:09:41.125Z"
+                                                 },
+    "6290dd9d2c06b90a200c78370620fbf1413dd45e":  {
+                                                     "repo":  "myclaude",
+                                                     "repo_url":  "https://github.com/cexll/myclaude",
+                                                     "name":  "do",
+                                                     "slug":  "do",
+                                                     "summary":  "`do`技能通过五阶段工作流，协调多智能体进行结构化功能开发。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "5cc7c4dd909932a431fd892fb16c9ddb890afbf3",
+                                                     "updated_at":  "2026-05-06T13:09:41.124Z"
+                                                 },
+    "003cdc635434e46d785ac28e2ef294086fa6bc68":  {
+                                                     "repo":  "myclaude",
+                                                     "repo_url":  "https://github.com/cexll/myclaude",
+                                                     "name":  "harness",
+                                                     "slug":  "harness",
+                                                     "summary":  "Harness是长期代理任务框架，提供多会话进度恢复、依赖及故障管理。",
+                                                     "category":  "任务规划",
+                                                     "source_hash":  "97f7cacbdeda6d7a3f6e6e645d822baccea7d9bc",
+                                                     "updated_at":  "2026-05-06T13:09:41.123Z"
+                                                 },
+    "a191f3c12ad306ecb3ef0527fb3f6cc578f3b62f":  {
+                                                     "repo":  "myclaude",
+                                                     "repo_url":  "https://github.com/cexll/myclaude",
+                                                     "name":  "omo",
+                                                     "slug":  "omo",
+                                                     "summary":  "`omo`是一个多智能体编排器，根据任务类型和风险动态选择代理，进行代码分析、bug修复和实现。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "03913e37750909c7532b0a6dc99f029c8c5ff8a0",
+                                                     "updated_at":  "2026-05-06T13:09:41.121Z"
+                                                 },
+    "fc16b13cd83f45151e3d3256aa5af9097346e108":  {
+                                                     "repo":  "myclaude",
+                                                     "repo_url":  "https://github.com/cexll/myclaude",
+                                                     "name":  "product-requirements",
+                                                     "slug":  "product-requirements",
+                                                     "summary":  "此技能通过交互对话和质量评分，收集分析产品需求，确保质量后生成专业PRD。",
+                                                     "category":  "设计媒体",
+                                                     "source_hash":  "c947660086e433aa89cf2594d99a6b3d0fea5db4",
+                                                     "updated_at":  "2026-05-06T13:09:41.120Z"
+                                                 },
+    "b6c5da8f7b52a48183fde1cb8ac6a1e8ee41956b":  {
+                                                     "repo":  "myclaude",
+                                                     "repo_url":  "https://github.com/cexll/myclaude",
+                                                     "name":  "prototype-prompt-generator",
+                                                     "slug":  "prototype-prompt-generator",
+                                                     "summary":  "生成详细的UI/UX原型提示，涵盖多设计系统与技术规范。",
+                                                     "category":  "文件系统",
+                                                     "source_hash":  "6ea7b49168a29b44bc6f5445e83ed2f2b49532ce",
+                                                     "updated_at":  "2026-05-06T13:09:41.118Z"
+                                                 },
+    "c5b31237b6b23e5d68264782225b77d2c316b87e":  {
+                                                     "repo":  "myclaude",
+                                                     "repo_url":  "https://github.com/cexll/myclaude",
+                                                     "name":  "skill-install",
+                                                     "slug":  "skill-install",
+                                                     "summary":  "从GitHub安全安装Claude技能，自动扫描恶意代码和漏洞。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "422ccab437e3e9a7af38bbfd959697c5e0b97708",
+                                                     "updated_at":  "2026-05-06T13:09:41.117Z"
+                                                 },
+    "714866728f1215428fe3a7a6f707a058abe8ee32":  {
+                                                     "repo":  "myclaude",
+                                                     "repo_url":  "https://github.com/cexll/myclaude",
+                                                     "name":  "sparv",
+                                                     "slug":  "sparv",
+                                                     "summary":  "SPARV是五阶段工作流，通过严格规则和外部记忆实现可靠交付。",
+                                                     "category":  "Agent 管理",
+                                                     "source_hash":  "e87cb012886b7d8c609da17086faf6769a2dd7d3",
+                                                     "updated_at":  "2026-05-06T13:09:41.115Z"
+                                                 },
+    "0b27e92c72bc454106f279ef1d35a40b3fe92c4f":  {
+                                                     "repo":  "myclaude",
+                                                     "repo_url":  "https://github.com/cexll/myclaude",
+                                                     "name":  "test-cases",
+                                                     "slug":  "test-cases",
+                                                     "summary":  "根据需求文档，生成涵盖功能、边界、错误和状态转换的全面测试用例。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "895239216f37b244678922d396993eeb36f9b983",
+                                                     "updated_at":  "2026-05-06T13:09:41.114Z"
+                                                 },
+    "51b06a3223b6484eb99495eeec648cb2bd4bb10a":  {
+                                                     "repo":  "gemini-cli",
+                                                     "repo_url":  "https://github.com/google-gemini/gemini-cli",
+                                                     "name":  "async-pr-review",
+                                                     "slug":  "async-pr-review",
+                                                     "summary":  "此技能用于启动异步PR审查，执行后台检查、AI代码评审并查询状态。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "37e68f3e62eb1bbaac1a6e57abc2b279e87a0a20",
+                                                     "updated_at":  "2026-05-06T13:09:47.189Z"
+                                                 },
+    "a8e0b56dc9232705e6d868582c250db3f5dd0a00":  {
+                                                     "repo":  "gemini-cli",
+                                                     "repo_url":  "https://github.com/google-gemini/gemini-cli",
+                                                     "name":  "behavioral-evals",
+                                                     "slug":  "behavioral-evals",
+                                                     "summary":  "行为评估指南，用于验证智能体决策逻辑、调试和防止回归。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "019862a13b443ad3705da097203f22589ba062a0",
+                                                     "updated_at":  "2026-05-06T13:09:47.187Z"
+                                                 },
+    "96741cb4e14f8035f5dbabdb1b39e26600b0a898":  {
+                                                     "repo":  "gemini-cli",
+                                                     "repo_url":  "https://github.com/google-gemini/gemini-cli",
+                                                     "name":  "ci",
+                                                     "slug":  "ci",
+                                                     "summary":  "该技能监控GitHub Actions CI，自动复现失败并快速定位修复。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "3d6a482aa378dbc89e73358aa1fccbee73466967",
+                                                     "updated_at":  "2026-05-06T13:09:47.186Z"
+                                                 },
+    "051194988f5ad5badd2c10cf9e5efdc81e536a64":  {
+                                                     "repo":  "gemini-cli",
+                                                     "repo_url":  "https://github.com/google-gemini/gemini-cli",
+                                                     "name":  "code-reviewer",
+                                                     "slug":  "code-reviewer",
+                                                     "summary":  "该技能审查本地代码和远程PR，确保代码正确、可维护并符合标准。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "7c44a33fd5f24d3a1dfe6af5b63487fcabb8c83c",
+                                                     "updated_at":  "2026-05-06T13:09:47.184Z"
+                                                 },
+    "28afcae39e9a059d3d6b67a9cc5a524d9e487f6c":  {
+                                                     "repo":  "gemini-cli",
+                                                     "repo_url":  "https://github.com/google-gemini/gemini-cli",
+                                                     "name":  "docs-changelog",
+                                                     "slug":  "docs-changelog",
+                                                     "summary":  "此工具根据版本和发布信息，生成并更新文档的更新日志文件。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "9b585c455e3ec2319c05804487b1ac716ac2ff3d",
+                                                     "updated_at":  "2026-05-06T13:09:47.183Z"
+                                                 },
+    "fea46598531ba6d06d9afe8519a390167738fb72":  {
+                                                     "repo":  "gemini-cli",
+                                                     "repo_url":  "https://github.com/google-gemini/gemini-cli",
+                                                     "name":  "docs-writer",
+                                                     "slug":  "docs-writer",
+                                                     "summary":  "此技能负责编写、审查和编辑`/docs`目录或`.md`文件，确保文档准确、清晰并符合标准。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "a7a07fe88d2e48f5a431c1d36015def22a03909c",
+                                                     "updated_at":  "2026-05-06T13:09:47.182Z"
+                                                 },
+    "c5f73bb56224f473266168c0cf5c6f9ebc006e84":  {
+                                                     "repo":  "gemini-cli",
+                                                     "repo_url":  "https://github.com/google-gemini/gemini-cli",
+                                                     "name":  "github-issue-creator",
+                                                     "slug":  "github-issue-creator",
+                                                     "summary":  "此技能用于创建符合规范的GitHub Issue，支持多种类型并使用模板。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "a5cd9fc8823a157a7bd93ddbf09fc3486505018d",
+                                                     "updated_at":  "2026-05-06T13:09:47.181Z"
+                                                 },
+    "bf590a93b8bae4dae316fe489669d1b2384e469b":  {
+                                                     "repo":  "gemini-cli",
+                                                     "repo_url":  "https://github.com/google-gemini/gemini-cli",
+                                                     "name":  "pr-address-comments",
+                                                     "slug":  "pr-address-comments",
+                                                     "summary":  "此技能协助用户处理Gemini CLI的GitHub PR评论，总结评论状态并等待用户指示。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "ac4bb204b4a18bba081c42147508b77311a279f7",
+                                                     "updated_at":  "2026-05-06T13:09:47.180Z"
+                                                 },
+    "834037eac04fce514d43483993b24b58ba242e3f":  {
+                                                     "repo":  "gemini-cli",
+                                                     "repo_url":  "https://github.com/google-gemini/gemini-cli",
+                                                     "name":  "pr-creator",
+                                                     "slug":  "pr-creator",
+                                                     "summary":  "此技能用于创建符合仓库规范和模板的拉取请求，并确保分支安全。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "85c727ba666d816f0fc5e9451a3ee9147246d2a1",
+                                                     "updated_at":  "2026-05-06T13:09:47.179Z"
+                                                 },
+    "a4d62877257072ff84cc9886e4cff384327587dd":  {
+                                                     "repo":  "gemini-cli",
+                                                     "repo_url":  "https://github.com/google-gemini/gemini-cli",
+                                                     "name":  "review-duplication",
+                                                     "slug":  "review-duplication",
+                                                     "summary":  "在代码审查中，识别重复功能、重复造轮子及未复用现有实践。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "11f6b0233377ee74f5f6cefd64fd3af5cfd96a90",
+                                                     "updated_at":  "2026-05-06T13:09:47.177Z"
+                                                 },
+    "788596759c9410522b3d4d0d16e91379eb7dfc61":  {
+                                                     "repo":  "gemini-cli",
+                                                     "repo_url":  "https://github.com/google-gemini/gemini-cli",
+                                                     "name":  "string-reviewer",
+                                                     "slug":  "string-reviewer",
+                                                     "summary":  "审查用户界面文本，确保其清晰、简洁、一致且符合风格规范。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "183e85aff31bf869009f81f0f117d098d8745809",
+                                                     "updated_at":  "2026-05-06T13:09:47.176Z"
+                                                 },
+    "c1ce15d32429ec6ac54485d9898ff216f16a4fff":  {
+                                                     "repo":  "gemini-cli",
+                                                     "repo_url":  "https://github.com/google-gemini/gemini-cli",
+                                                     "name":  "greeter",
+                                                     "slug":  "greeter",
+                                                     "summary":  "该技能提供友好的问候语，回应用户“你好”或问候请求。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "31045771715c302d1f58e717dae6f25ec67e9622",
+                                                     "updated_at":  "2026-05-06T13:09:47.174Z"
+                                                 },
+    "b31f0583764aa566dab07e96a2647a49af03d3e3":  {
+                                                     "repo":  "gemini-cli",
+                                                     "repo_url":  "https://github.com/google-gemini/gemini-cli",
+                                                     "name":  "skill-creator",
+                                                     "slug":  "skill-creator",
+                                                     "summary":  "此文档指导如何创建高效技能，通过模块化知识、工作流和工具扩展Gemini CLI功能，强调精简和分层加载。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "34a73e26cfc335ec9742c0ee5336f2274846cc72",
+                                                     "updated_at":  "2026-05-06T13:09:47.172Z"
+                                                 },
+    "0641cbd42e9e4b23293eff16f02c5078f9328f41":  {
+                                                     "repo":  "gemini-cli",
+                                                     "repo_url":  "https://github.com/google-gemini/gemini-cli",
+                                                     "name":  "pirate-skill",
+                                                     "slug":  "pirate-skill",
+                                                     "summary":  "此技能使你用海盗腔调回应，且必带“Arrr”。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "21c38a963718ee57e369c82ed5b2d30e32db7e82",
+                                                     "updated_at":  "2026-05-06T13:09:47.170Z"
+                                                 },
+    "0175b69555f9c92b13256ef897afd9e4e0454ac9":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "api-and-interface-design",
+                                                     "slug":  "api-and-interface-design",
+                                                     "summary":  "设计稳定、易用、可扩展的API与接口。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "a6b8c6bc9c54b8de9b6f4c1e6f749c41d844e01a",
+                                                     "updated_at":  "2026-05-06T13:11:43.228Z"
+                                                 },
+    "72ca1108027216c2dd4768c4f79e4f084a6038ee":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "browser-testing-with-devtools",
+                                                     "slug":  "browser-testing-with-devtools",
+                                                     "summary":  "通过DevTools进行浏览器测试与调试",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "df8535a4cd8a684c137ce1aac61ff2baed899835",
+                                                     "updated_at":  "2026-05-06T13:11:37.542Z"
+                                                 },
+    "9ea357aad07ecf8a06faa17faaa20e05ecfaf2be":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "ci-cd-and-automation",
+                                                     "slug":  "ci-cd-and-automation",
+                                                     "summary":  "自动化构建、测试与部署流程，确保代码质量。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "5644e38f798acd047ca38fa2990be3f0135d36ab",
+                                                     "updated_at":  "2026-05-06T13:11:33.090Z"
+                                                 },
+    "38ff96f67275477b53decf11cbcaf9cba52b4747":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "code-review-and-quality",
+                                                     "slug":  "code-review-and-quality",
+                                                     "summary":  "对代码进行多维度审查，确保质量、安全与规范。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "00f6301216a155667cd2a7ea99212f4ceb84bc75",
+                                                     "updated_at":  "2026-05-06T13:11:27.671Z"
+                                                 },
+    "c40b3406819a5621e1674f45fdc3d175e1afe87c":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "code-simplification",
+                                                     "slug":  "code-simplification",
+                                                     "summary":  "优化代码以提高可读性，不改变行为。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "b2580c6c5b48e8841a90f7181b615c858f845ea8",
+                                                     "updated_at":  "2026-05-06T13:11:23.262Z"
+                                                 },
+    "78f4858d328b490105f15ad1377d56ebdd17faf7":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "context-engineering",
+                                                     "slug":  "context-engineering",
+                                                     "summary":  "优化AI代理上下文设置，确保信息准确结构化，提高输出质量，避免错误。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "3a34e6edd4f7c9e4c30bfc4eac3bfa29b651bd8b",
+                                                     "updated_at":  "2026-05-06T13:11:21.035Z"
+                                                 },
+    "c0829a7ad4269d77530ce1af8691fdb224f71949":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "debugging-and-error-recovery",
+                                                     "slug":  "debugging-and-error-recovery",
+                                                     "summary":  "系统化调试与错误恢复指南",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "cade40a40b74e67d2e17f8dcafa3c9b47680ba74",
+                                                     "updated_at":  "2026-05-06T13:11:06.458Z"
+                                                 },
+    "65d472c60d5b94b9a5fe4aa37fc1a09124b01b11":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "deprecation-and-migration",
+                                                     "slug":  "deprecation-and-migration",
+                                                     "summary":  "管理代码废弃与系统迁移流程",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "ad9134284e111868bde80365db2c75f076f6f83a",
+                                                     "updated_at":  "2026-05-06T13:10:59.825Z"
+                                                 },
+    "dd53659b3f40818ff5258c1e33ba5ff82299de74":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "documentation-and-adrs",
+                                                     "slug":  "documentation-and-adrs",
+                                                     "summary":  "记录决策、代码上下文和API文档。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "a0b553349e951defb669f87a4c08bcf815172904",
+                                                     "updated_at":  "2026-05-06T13:10:53.265Z"
+                                                 },
+    "2861c5d43067d58fa9cc455829258b190b771fa5":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "frontend-ui-engineering",
+                                                     "slug":  "frontend-ui-engineering",
+                                                     "summary":  "构建高质量、符合设计规范的前端用户界面。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "851acfd374929f44ed8892207e56071ad56352fe",
+                                                     "updated_at":  "2026-05-06T13:10:48.792Z"
+                                                 },
+    "c182282d36acea3a0bfdf817da8c00aaa7b1e48e":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "git-workflow-and-versioning",
+                                                     "slug":  "git-workflow-and-versioning",
+                                                     "summary":  "规范Git工作流，确保代码质量与协作",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "90bb6a8ee75e8b991ca7ff5537811f94a98f587f",
+                                                     "updated_at":  "2026-05-06T13:10:43.400Z"
+                                                 },
+    "b2fe9b4a664b64065e8876dd43febed908b67b0e":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "idea-refine",
+                                                     "slug":  "idea-refine",
+                                                     "summary":  "结构化精炼想法，产出行动方案。",
+                                                     "category":  "任务规划",
+                                                     "source_hash":  "ed8c33a78b02506d0c53835242dd1b1939ad0f6f",
+                                                     "updated_at":  "2026-05-06T13:10:37.430Z"
+                                                 },
+    "4450b05a875f1b64f3b75371e3c455f652a5a417":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "incremental-implementation",
+                                                     "slug":  "incremental-implementation",
+                                                     "summary":  "将大型变更拆分为小步，逐步实现与验证。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "299f3b7e941568ed7a56264fd55262715df50929",
+                                                     "updated_at":  "2026-05-06T13:10:31.820Z"
+                                                 },
+    "74985761737ed7de102ff6cac67e628a781c3264":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "performance-optimization",
+                                                     "slug":  "performance-optimization",
+                                                     "summary":  "优化应用性能，通过测量识别并修复瓶颈。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "696147d4672a3c08d5c2b8f5f6a71c5d0dcb4057",
+                                                     "updated_at":  "2026-05-06T13:10:27.151Z"
+                                                 },
+    "ee16c1e4ecbb3ebe0f7aad642c2f52990865ec73":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "planning-and-task-breakdown",
+                                                     "slug":  "planning-and-task-breakdown",
+                                                     "summary":  "将工作分解为可执行任务并规划",
+                                                     "category":  "任务规划",
+                                                     "source_hash":  "ff4e2cab39a280f242b19a8717ae00d10ec63813",
+                                                     "updated_at":  "2026-05-06T13:10:19.722Z"
+                                                 },
+    "52847e4bd55e814718b94243e600dc814c8618ca":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "security-and-hardening",
+                                                     "slug":  "security-and-hardening",
+                                                     "summary":  "确保Web应用安全，防范漏洞，强化防护。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "729ed01dd1c3dfe310bd2635a35308aeb5a7ecb9",
+                                                     "updated_at":  "2026-05-06T13:10:16.503Z"
+                                                 },
+    "9a8ea35f90755563e7e11577eb7905cc20ae83de":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "shipping-and-launch",
+                                                     "slug":  "shipping-and-launch",
+                                                     "summary":  "安全地准备和执行产品发布，包括检查、监控和回滚。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "9903262d856a6ec9ca25090cd2f379788d0387e8",
+                                                     "updated_at":  "2026-05-06T13:10:12.949Z"
+                                                 },
+    "aa6adaeea57c3b8660880447a030f52894f9df9c":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "source-driven-development",
+                                                     "slug":  "source-driven-development",
+                                                     "summary":  "基于官方文档实现代码，确保正确性并引用来源。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "669bb52dea620fa3bb480288e3c03644a37bb760",
+                                                     "updated_at":  "2026-05-06T13:10:08.664Z"
+                                                 },
+    "e8c5b2380ea3d38998a565daaa0595067844e6a6":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "spec-driven-development",
+                                                     "slug":  "spec-driven-development",
+                                                     "summary":  "编码前制定详细规范，明确需求和设计，减少返工。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "4dfb0bc4bd606095bb2b09dfbf91b20e4e780df4",
+                                                     "updated_at":  "2026-05-06T13:10:01.805Z"
+                                                 },
+    "997ba2a964c49eb74699a8f30500cb688d2bd09b":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "test-driven-development",
+                                                     "slug":  "test-driven-development",
+                                                     "summary":  "通过先写失败测试再编写代码来驱动开发。",
+                                                     "category":  "开发工程",
+                                                     "source_hash":  "b1949c94a07f55cfd6e3bba1deb5a4f18101f2cd",
+                                                     "updated_at":  "2026-05-06T13:09:57.136Z"
+                                                 },
+    "ef92023cff3e8279f5de595219db6b9f91f89b2f":  {
+                                                     "repo":  "agent-skills",
+                                                     "repo_url":  "https://github.com/addyosmani/agent-skills",
+                                                     "name":  "using-agent-skills",
+                                                     "slug":  "using-agent-skills",
+                                                     "summary":  "管理和调度其他Agent技能的元技能。",
+                                                     "category":  "Agent 管理",
+                                                     "source_hash":  "cf1b41c8b5de4181c4f26818d57bd62a2c2b2766",
+                                                     "updated_at":  "2026-05-06T13:09:54.246Z"
+                                                 }
+}
