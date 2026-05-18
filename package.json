@@ -1,12 +1,13 @@
 {
   "name": "skill-hub",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Skill Hub desktop application",
   "main": "dist/main/main/index.js",
   "scripts": {
-    "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
-    "build": "npm run typecheck && npm run build:main && npm run build:renderer",
+    "dev:renderer": "vite --host 127.0.0.1 --port 5201 --strictPort",
+    "dev": "tauri dev",
+    "build": "npm run typecheck && tauri build",
     "build:main": "tsc -p tsconfig.node.json",
     "build:renderer": "vite build",
     "package:win": "npm run build && electron-builder --win portable",
@@ -15,13 +16,16 @@
     "start": "electron dist/main/main/index.js",
     "dev:main": "tsc -p tsconfig.node.json --watch",
     "dev:electron": "wait-on http://127.0.0.1:5173 && electron dist/main/main/index.js",
-    "dev:app": "concurrently -k -n VITE,ELECTRON -c cyan,magenta \"npm run dev\" \"npm run dev:electron\"",
+    "dev:app": "concurrently -k -n VITE,ELECTRON -c cyan,magenta \"npm run dev:renderer\" \"npm run dev:electron\"",
     "dev:full": "npm run build:main && npm run dev:app"
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.11.0",
     "undici": "^6.25.0"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.11.1",
+    "@tauri-apps/plugin-dialog": "^2.7.1",
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

@@ -40,10 +40,17 @@ export function MarketPage({ onRefreshApp, onStatus, onRun }: MarketPageProps) {
       return;
     }
 
-    const result = await onRun(["install-url", "--url", url], "链接技能已添加");
-    if (result.ok) {
-      setRepoUrl("");
-      onRefreshApp();
+    try {
+      const result = await skillHubApi.gitImport(url);
+      if (result.ok) {
+        setRepoUrl("");
+        onStatus(`技能「${result.data?.slug}」已导入`);
+        onRefreshApp();
+      } else {
+        onStatus(result.message || result.stderr || "导入失败");
+      }
+    } catch (e: any) {
+      onStatus(`导入失败: ${e.message || e}`);
     }
   }
 

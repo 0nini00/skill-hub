@@ -1,22 +1,134 @@
+import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 import type { AiConfig, AppState, BackendResult } from "@shared/types/skill";
 
+function isTauri(): boolean {
+  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
+}
+
+/**
+ * 兼容层：
+ * - Tauri：走 invoke / plugin-dialog / shell
+ * - Electron（遗留）：走 preload 暴露的 window.skillHub
+ */
 export const skillHubApi = {
-  getAppState(): Promise<AppState> {
+  async getAppState(): Promise<AppState> {
+    if (isTauri()) {
+      return invoke<AppState>("get_app_state");
+    }
     return window.skillHub.getAppState();
   },
-  runBackend<T = unknown>(args: string[]): Promise<BackendResult<T>> {
+
+  async runBackend<T = unknown>(args: string[]): Promise<BackendResult<T>> {
+    if (isTauri()) {
+      // 第一阶段：先不给后端实现完整 CLI，避免 UI 崩溃
+      return {
+        ok: false,
+        data: null,
+        stdout: "",
+        stderr: `当前命令暂未迁移到 Tauri: ${args.join(" ")}`,
+        message: "命令未实现",
+      };
+    }
     return window.skillHub.runBackend<T>(args);
   },
-  getAiConfig(): Promise<AiConfig> {
+
+  async getAiConfig(): Promise<AiConfig> {
+    if (isTauri()) {
+      return invoke<AiConfig>("read_ai_config");
+    }
     return window.skillHub.getAiConfig();
   },
-  setAiConfig(config: Required<AiConfig>): Promise<BackendResult> {
+
+  async setAiConfig(config: Required<AiConfig>): Promise<BackendResult> {
+    if (isTauri()) {
+      return invoke<BackendResult>("write_ai_config", { config });
+    }
     return window.skillHub.setAiConfig(config);
   },
-  selectDirectory(): Promise<string | null> {
+
+  async selectDirectory(): Promise<string | null> {
+    if (isTauri()) {
+      // 使用 Tauri dialog 插件
+      const selected = await open({ directory: true, multiple: false });
+      if (!selected) return null;
+      return Array.isArray(selected) ? selected[0] ?? null : selected;
+    }
     return window.skillHub.selectDirectory();
   },
-  openPath(path: string): Promise<boolean> {
+
+  async openPath(path: string): Promise<boolean> {
+    if (isTauri()) {
+      return invoke<boolean>("open_path", { path });
+    }
     return window.skillHub.openPath(path);
+  },
+
+  async linkSkill(cli: string, slug: string): Promise<BackendResult> {
+    if (isTauri()) {
+      return invoke<BackendResult>("link_skill", { cli, slug });
+    }
+    return window.skillHub.runBackend(["link", cli, slug]);
+  },
+
+  async unlinkSkill(cli: string, slug: string): Promise<BackendResult> {
+    if (isTauri()) {
+      return invoke<BackendResult>("unlink_skill", { cli, slug });
+    }
+    return window.skillHub.runBackend(["unlink", cli, slug]);
+  },
+
+  async hideSkill(slug: string): Promise<BackendResult> {
+    if (isTauri()) {
+      return invoke<BackendResult>("hide_skill", { slug });
+    }
+    return window.skillHub.runBackend(["hide-skill", slug]);
+  },
+
+  async unhideSkill(slug: string): Promise<BackendResult> {
+    if (isTauri()) {
+      return invoke<BackendResult>("unhide_skill", { slug });
+    }
+    return window.skillHub.runBackend(["unhide-skill", slug]);
+  },
+
+  async deleteSkill(slug: string): Promise<BackendResult> {
+    if (isTauri()) {
+      return invoke<BackendResult>("delete_skill", { slug });
+    }
+    return window.skillHub.runBackend(["delete-skill", slug]);
+  },
+
+  async gitImport(url: string): Promise<BackendResult> {
+    if (isTauri()) {
+      return invoke<BackendResult>("git_import", { url });
+    }
+    return window.skillHub.runBackend(["git-import", url]);
+  },
+
+  async aiSummarize(slug: string, content: string): Promise<BackendResult> {
+    if (isTauri()) {
+      return invoke<BackendResult>("ai_summarize", { slug, content });
+    }
+    return window.skillHub.runBackend(["ai-summarize", slug]);
+  },
+
+  async installSkillsToProject(projectPath: string, slugs: string[], clis: string[]): Promise<BackendResult> {
+    if (isTauri()) {
+      return invoke<BackendResult>("install_skills_to_project", { projectPath, slugs, clis });
+    }
+    return window.skillHub.runBackend([
+      "install-project-skills",
+      "--project", projectPath,
+      "--skills", slugs.join(","),
+      "--clis", clis.join(","),
+    ]);
+  },
+
+  async setVisibleClis(clis: string[]): Promise<BackendResult> {
+    if (isTauri()) {
+      return invoke<BackendResult>("set_visible_clis", { clis: clis.join(",") });
+    }
+    return window.skillHub.runBackend(["set-visible-clis", "--clis", clis.join(",")]);
   },
 };

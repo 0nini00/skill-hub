@@ -87,7 +87,14 @@ export function SettingsPage({ detectedClis, visibleClis, onRefresh, onStatus, o
   }
 
   async function saveVisibleClis() {
-    await onRun(["set-visible-clis", "--clis", selectedClis.join(",")], "展示列已保存");
+    const result = await skillHubApi.setVisibleClis(selectedClis);
+    if (result.ok) {
+      onStatus("展示列已保存");
+      // 保存成功后自动刷新，应用新配置
+      onRefresh();
+    } else {
+      onStatus(result.message || "展示列保存失败");
+    }
   }
 
   return (

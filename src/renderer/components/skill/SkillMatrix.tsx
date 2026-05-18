@@ -97,7 +97,10 @@ export function SkillMatrix({
                     <FolderOpen size={14} aria-hidden="true" />
                     打开目录
                   </button>
-                  <button type="button" onClick={() => onRun(["hide-skill", row.slug], "技能已隐藏")}>
+                  <button type="button" onClick={async () => {
+                      try { await skillHubApi.hideSkill(row.slug); onRefresh(); }
+                      catch (e) { alert(`隐藏失败: ${e}`); }
+                    }}>
                     <EyeOff size={14} aria-hidden="true" />
                     隐藏
                   </button>
@@ -111,12 +114,18 @@ export function SkillMatrix({
                       className={`toggle ${linked ? "on" : ""}`}
                       type="button"
                       aria-pressed={linked}
-                      onClick={() =>
-                        onRun(
-                          [linked ? "unlink-skill" : "link-skill", row.slug, cli.cli],
-                          linked ? "链接已取消" : "链接已更新",
-                        )
-                      }
+                      onClick={async () => {
+                        try {
+                          if (linked) {
+                            await skillHubApi.unlinkSkill(cli.cli, row.slug);
+                          } else {
+                            await skillHubApi.linkSkill(cli.cli, row.slug);
+                          }
+                          onRefresh();
+                        } catch (e) {
+                          alert(`链接操作失败: ${e}`);
+                        }
+                      }}
                     >
                       <Link2 size={15} aria-hidden="true" />
                       {linked ? "已启用" : "未启用"}
@@ -143,19 +152,23 @@ export function SkillMatrix({
                   <p>{row.summary}</p>
                 </div>
                 <div className="row-actions">
-                  <button type="button" onClick={() => onRun(["unhide-skill", row.slug], "技能已恢复")}>
+                  <button type="button" onClick={async () => {
+                      try { await skillHubApi.unhideSkill(row.slug); onRefresh(); }
+                      catch (e) { alert(`恢复失败: ${e}`); }
+                    }}>
                     <RotateCcw size={14} aria-hidden="true" />
                     恢复
                   </button>
                   <button
                     type="button"
                     className="danger-link"
-                    onClick={() => {
+                    onClick={async () => {
                       const confirmed = window.confirm(
                         `确定要永久删除技能「${row.name || row.slug}」吗？\n\n这个操作会删除本地技能文件，无法从 Skill Hub 内撤销。`,
                       );
                       if (!confirmed) return;
-                      onRun(["delete-skill", row.slug], "技能已删除");
+                      try { await skillHubApi.deleteSkill(row.slug); onRefresh(); }
+                      catch (e) { alert(`删除失败: ${e}`); }
                     }}
                   >
                     <Trash2 size={14} aria-hidden="true" />

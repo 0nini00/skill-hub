@@ -4,6 +4,7 @@ import { MarketPage } from "./components/prompt/MarketPage";
 import { ProjectInstallPage } from "./components/folder/ProjectInstallPage";
 import { SettingsPage } from "./components/settings/SettingsPage";
 import { SkillMatrix } from "./components/skill/SkillMatrix";
+import { skillHubApi } from "./services/skillHubApi";
 import { formatAiSummaryStatus } from "./services/statusMessages";
 import { useSkillHubState } from "./stores/useSkillHubState";
 
@@ -35,7 +36,20 @@ export function App() {
   const title = useMemo(() => viewTitles[view], [view]);
 
   async function summarizeCurrentView() {
-    await runAndRefresh(["auto-summarize"], (result) => formatAiSummaryStatus(result.data, "AI 摘要"));
+    setStatus("正在生成 AI 摘要…");
+    try {
+      // 对每个没有摘要的技能调用 AI 生成
+      for (const skill of visibleSkills) {
+        if (skill.summary && skill.summary.length > 5) continue;
+        // 简化：直接传空内容，后端会自动读取 SKILL.md
+        await skillHubApi.aiSummarize(skill.slug, "");
+        setStatus(`已生成: ${skill.name}`);
+      }
+      setStatus("AI 摘要生成完成");
+      await refresh();
+    } catch (e: any) {
+      setStatus(`AI 摘要失败: ${e.message || e}`);
+    }
   }
 
   return (

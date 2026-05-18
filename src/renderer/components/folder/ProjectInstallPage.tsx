@@ -47,18 +47,13 @@ export function ProjectInstallPage({ skills, detectedClis, onRun, onStatus }: Pr
       onStatus("请至少选择一个 CLI");
       return;
     }
-    await onRun(
-      [
-        "install-project-skills",
-        "--project",
-        projectPath,
-        "--skills",
-        selectedSkills.join(","),
-        "--clis",
-        selectedClis.join(","),
-      ],
-      "技能已安装到项目",
-    );
+    
+    const res = await skillHubApi.installSkillsToProject(projectPath, selectedSkills, selectedClis);
+    if (res.ok) {
+      onStatus("技能已安装到项目");
+    } else {
+      onStatus(res.message || res.stderr || "安装失败");
+    }
   }
 
   if (!skills.length) {
