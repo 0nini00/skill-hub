@@ -103,6 +103,33 @@ fn read_meta_json(path: &Path) -> MetaJson {
     }
 }
 
+
+/// 尝试从某个技能目录读取 summary/category，并标记是否存在 SKILL.md
+fn try_read_skill_info_from_dir(dir: &Path, summary: &mut String, category: &mut Option<String>, any_skill_md_exists: &mut bool) {
+    let meta_path = dir.join("meta.json");
+    let meta = read_meta_json(&meta_path);
+
+    if category.is_none() {
+        *category = meta.category.as_ref().filter(|c| !c.is_empty()).cloned();
+    }
+
+    if summary.is_empty() {
+        if let Some(s) = meta.get_summary() {
+            if !s.is_empty() {
+                *summary = s;
+            }
+        }
+    }
+
+    let skill_md = dir.join("SKILL.md");
+    if skill_md.exists() {
+        *any_skill_md_exists = true;
+        if summary.is_empty() {
+            *summary = read_skill_md_summary(&skill_md);
+        }
+    }
+}
+
 fn slug_from_dir_name(name: &str) -> String {
     name.trim().to_lowercase().replace(' ', "-")
 }
@@ -128,67 +155,128 @@ fn get_full_app_state() -> Result<AppState, String> {
     // 扫描所有已存在的 CLIs
     let detected_clis = scan_all_clis();
 
-    // 扫描技能目录
-    let mut skills: Vec<SkillRow> = Vec::new();
-    let s_dir = skills_dir()?;
+    // 扫描技能目录（并集）：
+    // 1) Skill Hub 库目录: ~/.config/skill-hub/skills
+    // 2) 各 CLI 的 skills 目录（可能不止一个路径）
 
-    if let Ok(entries) = fs::read_dir(&s_dir) {
+    // hub_skills: slug -> hub_dir_path
+    let mut hub_skills: std::collections::HashMap<String, PathBuf> = std::collections::HashMap::new();
+    let hub_dir = skills_dir()?;
+    if let Ok(entries) = fs::read_dir(&hub_dir) {
         for entry in entries.flatten() {
             let path = entry.path();
             if !path.is_dir() {
                 continue;
             }
-
             let slug = path
                 .file_name()
                 .and_then(|s| s.to_str())
                 .map(slug_from_dir_name)
                 .unwrap_or_else(|| "unknown".to_string());
-
-            // 读取 meta.json（优先）
-            let meta_path = path.join("meta.json");
-            let meta = read_meta_json(&meta_path);
-
-            // 读取摘要：优先 meta.ai_summary -> 其次 meta.summary -> 最后读 SKILL.md 第一行
-            let skill_md = path.join("SKILL.md");
-            let meta_summary = meta.get_summary();
-            let missing = !skill_md.exists() && meta_summary.is_none();
-            
-            let summary = match meta_summary {
-                Some(s) if !s.is_empty() => s,
-                _ => {
-                    if missing {
-                        String::new()
-                    } else {
-                        read_skill_md_summary(&skill_md)
-                    }
-                }
-            };
-
-            let category = meta.category.filter(|c| !c.is_empty());
-            let hidden = hidden_slugs.contains(&slug);
-
-            // 检查该技能在每个已检测 CLI 下的链接状态
-            let mut linked: Vec<String> = Vec::new();
-            for cli_row in &detected_clis {
-                if is_skill_linked(cli_row, &slug) {
-                    linked.push(cli_row.cli.clone());
-                }
-            }
-
-            skills.push(SkillRow {
-                name: slug.clone(),
-                slug,
-                hidden,
-                missing,
-                summary,
-                category,
-                path: path.to_string_lossy().to_string(),
-                linked,
-            });
+            hub_skills.insert(slug, path);
         }
     }
 
+    // external_skills: slug -> Vec<(cli_name, skill_dir_path)>
+    let mut external_skills: std::collections::HashMap<String, Vec<(String, PathBuf)>> = std::collections::HashMap::new();
+    let all_cli_paths = crate::all_existing_cli_paths();
+    for (cli, paths) in all_cli_paths {
+        for skills_path in paths {
+            let skills_dir_path = PathBuf::from(&skills_path);
+            if let Ok(entries) = fs::read_dir(&skills_dir_path) {
+                for entry in entries.flatten() {
+                    let sp = entry.path();
+                    if !sp.is_dir() {
+                        continue;
+                    }
+                    let slug = sp
+                        .file_name()
+                        .and_then(|s| s.to_str())
+                        .map(slug_from_dir_name)
+                        .unwrap_or_else(|| "unknown".to_string());
+                    external_skills
+                        .entry(slug)
+                        .or_insert_with(Vec::new)
+                        .push((cli.clone(), sp));
+                }
+            }
+        }
+    }
+
+    // 合并 slug 集合
+    let mut all_slugs: Vec<String> = hub_skills.keys().cloned().collect();
+    for slug in external_skills.keys() {
+        if !hub_skills.contains_key(slug) {
+            all_slugs.push(slug.clone());
+        }
+    }
+    all_slugs.sort();
+    all_slugs.dedup();
+
+    // 构建 skills 行
+    let mut skills: Vec<SkillRow> = Vec::new();
+
+    for slug in all_slugs {
+        let hub_path = hub_skills.get(&slug).cloned();
+        let ext_paths = external_skills.get(&slug).cloned().unwrap_or_default();
+
+        let source = if hub_path.is_some() { "hub" } else { "external" };
+
+        // 读取 meta/summary/category：优先 hub，没有再 external
+        let mut summary = String::new();
+        let mut category: Option<String> = None;
+
+        let mut any_skill_md_exists = false;
+
+        // 从某个技能目录尝试读取 summary/category（函数在上方定义）
+
+        if let Some(dir) = &hub_path {
+            try_read_skill_info_from_dir(dir, &mut summary, &mut category, &mut any_skill_md_exists);
+        }
+        if summary.is_empty() || category.is_none() {
+            // external fallback
+            for (_cli, dir) in &ext_paths {
+                try_read_skill_info_from_dir(dir, &mut summary, &mut category, &mut any_skill_md_exists);
+                if !summary.is_empty() && category.is_some() {
+                    break;
+                }
+            }
+        }
+
+        let missing = !any_skill_md_exists && summary.is_empty();
+        let hidden = hidden_slugs.contains(&slug);
+
+        // linked：只要任一 CLI 任一路径下存在该 slug 即算
+        let mut linked: Vec<String> = Vec::new();
+        for cli_row in &detected_clis {
+            if crate::is_skill_linked_any(&cli_row.cli, &slug) {
+                linked.push(cli_row.cli.clone());
+            }
+        }
+
+        // path：优先 hub，否则 external 任意一个
+        let path = if let Some(dir) = hub_path {
+            dir.to_string_lossy().to_string()
+        } else if let Some((_cli, dir)) = ext_paths.first() {
+            dir.to_string_lossy().to_string()
+        } else {
+            String::new()
+        };
+
+        skills.push(SkillRow {
+            source: source.to_string(),
+            name: slug.clone(),
+            slug,
+            hidden,
+            missing,
+            summary,
+            category,
+            path,
+            linked,
+        });
+    }
+
+    // hidden 的仍然返回在 skills 里，由前端做分组
     // 如果 visible_clis 为空，使用所有检测到的 CLI 名称
     let visible_clis = if visible_clis.is_empty() {
         detected_clis.iter().map(|c| c.cli.clone()).collect()
@@ -469,8 +557,6 @@ fn open_path(path: String) -> Result<bool, String> {
         Ok(false)
     }
 
-    #[cfg(any(target_os = "windows", target_os = "macos", target_os = "linux"))]
-    unreachable!()
 }
 
 /// 链接技能到指定 CLI（创建目录 junction/symlink）

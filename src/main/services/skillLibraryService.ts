@@ -40,6 +40,7 @@ export function getNativeAppState(): AppState {
     const skills: SkillRow[] = skillRows.map((row) => {
       const sourcePath = getSkillSourcePath(row.slug, detectedClis);
       return {
+        source: "hub",
         name: row.name,
         slug: row.slug,
         hidden: Boolean(row.hidden),
@@ -53,6 +54,7 @@ export function getNativeAppState(): AppState {
 
     for (const row of hiddenMissingRows) {
       skills.push({
+        source: "hub",
         name: row.slug,
         slug: row.slug,
         hidden: true,

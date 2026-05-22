@@ -1,0 +1,4 @@
+[build]
+# 把 target 挪到用户目录，减少被同步/索引/杀毒盯上的概率
+# （同时避免路径太长）
+target-dir = "C:/Users/chenle/.cargo/skill-hub-target"

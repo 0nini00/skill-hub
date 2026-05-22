@@ -91,6 +91,7 @@ export function SkillMatrix({
                   {row.name}
                 </button>
                 <span className="badge">{row.category || "其他"}</span>
+                {row.source === "external" ? <span className="badge">外部</span> : null}
                 <p>{row.summary || "暂无摘要"}</p>
                 <div className="row-actions">
                   <button type="button" onClick={() => skillHubApi.openPath(row.path)}>
@@ -108,13 +109,17 @@ export function SkillMatrix({
               </div>
               {activeClis.map((cli) => {
                 const linked = row.linked.includes(cli.cli);
+                const isExternal = row.source === "external";
                 return (
                   <div key={cli.cli} className="cli-cell" role="cell">
                     <button
                       className={`toggle ${linked ? "on" : ""}`}
                       type="button"
                       aria-pressed={linked}
+                      disabled={isExternal}
+                      title={isExternal ? "该技能仅存在于某些 CLI 目录，需先导入到技能库才能链接/取消链接" : ""}
                       onClick={async () => {
+                        if (isExternal) return;
                         try {
                           if (linked) {
                             await skillHubApi.unlinkSkill(cli.cli, row.slug);

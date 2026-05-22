@@ -116,6 +116,32 @@ pub fn scan_all_clis() -> Vec<CliRow> {
 
 /// 检测当前系统中实际存在的 CLIs
 /// 对每个内置/自定义 CLI，取其第一个存在的 skills 目录路径
+
+/// 获取所有已存在 CLI 的 skills 目录路径（每个 CLI 可能有多个）
+pub fn all_existing_cli_paths() -> HashMap<String, Vec<String>> {
+    let definitions = get_cli_definitions();
+    let mut result: HashMap<String, Vec<String>> = HashMap::new();
+
+    // 按内置顺序优先
+    let mut ordered_keys: Vec<String> = BUILTIN_CLI_NAMES.iter().map(|s| s.to_string()).collect();
+    for key in definitions.keys() {
+        if !ordered_keys.contains(key) {
+            ordered_keys.push(key.clone());
+        }
+    }
+
+    for cli_name in ordered_keys {
+        if let Some(paths) = definitions.get(&cli_name) {
+            let existing: Vec<String> = paths.iter().filter(|p| path_exists(p)).cloned().collect();
+            if !existing.is_empty() {
+                result.insert(cli_name.clone(), existing);
+            }
+        }
+    }
+
+    result
+}
+
 pub fn detect_cli_rows() -> Vec<CliRow> {
     let definitions = get_cli_definitions();
     let mut rows = Vec::new();
@@ -143,6 +169,17 @@ pub fn detect_cli_rows() -> Vec<CliRow> {
     }
 
     rows
+}
+
+
+/// 获取指定 CLI 当前系统中“所有存在的” skills 目录路径
+/// 用于扫描技能（因为同一个 CLI 可能有多个候选路径同时存在）
+pub fn existing_cli_paths(cli: &str) -> Vec<String> {
+    let definitions = get_cli_definitions();
+    let Some(paths) = definitions.get(cli) else {
+        return Vec::new();
+    };
+    paths.iter().filter(|p| path_exists(p)).cloned().collect()
 }
 
 /// 解析指定 CLI 的 skills 目录路径
@@ -191,3 +228,16 @@ pub fn is_skill_linked(cli: &CliRow, skill_slug: &str) -> bool {
     // 只要目录存在就算已链接（支持 symlink/junction 和真实目录）
     skill_path.exists() && skill_path.is_dir()
 }
+
+
+/// 检查指定技能（slug）是否存在于某个 CLI 的任意 skills 目录中
+pub fn is_skill_linked_any(cli: &str, skill_slug: &str) -> bool {
+    for p in existing_cli_paths(cli) {
+        let skill_path = std::path::Path::new(&p).join(skill_slug);
+        if skill_path.exists() && skill_path.is_dir() {
+            return true;
+        }
+    }
+    false
+}
+

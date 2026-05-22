@@ -10,6 +10,8 @@ pub struct CliRow {
 /// 技能行：矩阵表格中的一行
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SkillRow {
+    /// 技能来源：hub(技能库) 或 external(仅存在于某些 CLI 目录)
+    pub source: String,
     pub name: String,
     pub slug: String,
     pub hidden: bool,

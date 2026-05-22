@@ -4,6 +4,7 @@ export interface CliRow {
 }
 
 export interface SkillRow {
+  source: "hub" | "external";
   name: string;
   slug: string;
   hidden: boolean;

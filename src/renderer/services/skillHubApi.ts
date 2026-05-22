@@ -99,9 +99,9 @@ export const skillHubApi = {
     return window.skillHub.runBackend(["delete-skill", slug]);
   },
 
-  async gitImport(url: string): Promise<BackendResult> {
+  async gitImport(url: string): Promise<BackendResult<{ slug: string }>> {
     if (isTauri()) {
-      return invoke<BackendResult>("git_import", { url });
+      return invoke<BackendResult<{ slug: string }>>("git_import", { url });
     }
     return window.skillHub.runBackend(["git-import", url]);
   },
