@@ -2,14 +2,12 @@ use std::collections::HashMap;
 use std::fs;
 
 use crate::paths::user_home_dir;
-use crate::types::{CliRow, SkillHubConfig};
-use crate::paths::{config_path, read_json_file};
+use crate::types::CliRow;
 
-/// 内置 CLI 名称列表
-pub const BUILTIN_CLI_NAMES: &[&str] = &["alma", "claude", "gemini", "codex", "aion"];
+/// 只支持三个核心 CLI
+pub const CORE_CLI_NAMES: &[&str] = &["claude", "codex", "gemini"];
 
-/// 内置 CLI 定义：每个 CLI 名映射到其 skills 目录的可能路径列表
-/// 参照 Electron 版 cliRegistryService.ts 中的 getCliDefinitions()
+/// 核心 CLI 定义：每个 CLI 名映射到其 skills 目录的可能路径列表
 pub fn get_cli_definitions() -> HashMap<String, Vec<String>> {
     let home = match user_home_dir() {
         Ok(h) => h,
@@ -19,15 +17,6 @@ pub fn get_cli_definitions() -> HashMap<String, Vec<String>> {
 
     let mut definitions: HashMap<String, Vec<String>> = HashMap::new();
 
-    // alma
-    definitions.insert(
-        "alma".to_string(),
-        vec![
-            format!("{}/.config/alma/skills", home_str),
-            format!("{}/.alma/skills", home_str),
-        ],
-    );
-
     // claude
     definitions.insert(
         "claude".to_string(),
@@ -35,15 +24,6 @@ pub fn get_cli_definitions() -> HashMap<String, Vec<String>> {
             format!("{}/.claude/skills", home_str),
             format!("{}/AppData/Roaming/Claude/skills", home_str),
             format!("{}/.config/claude/skills", home_str),
-        ],
-    );
-
-    // gemini
-    definitions.insert(
-        "gemini".to_string(),
-        vec![
-            format!("{}/.gemini/skills", home_str),
-            format!("{}/.config/gemini/skills", home_str),
         ],
     );
 
@@ -56,56 +36,112 @@ pub fn get_cli_definitions() -> HashMap<String, Vec<String>> {
         ],
     );
 
-    // aion
+    // gemini
     definitions.insert(
-        "aion".to_string(),
+        "gemini".to_string(),
         vec![
-            format!("{}/AppData/Roaming/AionUi/config/skills", home_str),
-            format!("{}/.config/aion/skills", home_str),
-            format!("{}/.aion/skills", home_str),
+            format!("{}/.gemini/skills", home_str),
+            format!("{}/.config/gemini/skills", home_str),
         ],
     );
-
-    // 合并自定义 CLIs
-    if let Ok(custom_clis) = merge_custom_clis() {
-        for (name, paths) in custom_clis {
-            // 跳过与内置同名的自定义 CLI（保护内置定义）
-            if definitions.contains_key(&name) {
-                eprintln!("[skill-hub] 自定义 CLI \"{}\" 与内置同名，已忽略", name);
-                continue;
-            }
-            definitions.insert(name, paths);
-        }
-    }
 
     definitions
 }
 
-/// 从 config.json 中读取 custom_clis 字段
-fn merge_custom_clis() -> Result<HashMap<String, Vec<String>>, String> {
-    let config: SkillHubConfig = read_json_file(&config_path()?);
-    let custom_clis = match config.custom_clis {
-        Some(val) => val,
-        None => return Ok(HashMap::new()),
+/// 核心 CLI 定义：每个 CLI 名映射到其 rules 根目录的可能路径列表
+/// 注意：rules 文件位于 CLI 根目录，不在 skills 子目录中。
+pub fn get_cli_rule_definitions() -> HashMap<String, Vec<String>> {
+    let home = match user_home_dir() {
+        Ok(h) => h,
+        Err(_) => return HashMap::new(),
     };
+    let home_str = home.to_string_lossy();
 
-    let Some(obj) = custom_clis.as_object() else {
-        return Ok(HashMap::new());
-    };
+    let mut definitions: HashMap<String, Vec<String>> = HashMap::new();
 
-    let mut result = HashMap::new();
-    for (name, val) in obj {
-        if let Some(arr) = val.as_array() {
-            let paths: Vec<String> = arr
-                .iter()
-                .filter_map(|v| v.as_str().map(String::from))
-                .collect();
-            if !paths.is_empty() {
-                result.insert(name.to_lowercase(), paths);
+    definitions.insert(
+        "claude".to_string(),
+        vec![
+            format!("{}/.claude", home_str),
+            format!("{}/AppData/Roaming/Claude", home_str),
+            format!("{}/.config/claude", home_str),
+        ],
+    );
+
+    definitions.insert(
+        "codex".to_string(),
+        vec![
+            format!("{}/.codex", home_str),
+            format!("{}/.config/codex", home_str),
+        ],
+    );
+
+    definitions.insert(
+        "gemini".to_string(),
+        vec![
+            format!("{}/.gemini", home_str),
+            format!("{}/.config/gemini", home_str),
+        ],
+    );
+
+    definitions
+}
+
+/// 获取 CLI 的主规则文件名，用于创建/切换托管规则链接。
+pub fn rule_file_name_for_cli(cli: &str) -> &'static str {
+    match cli {
+        "claude" => "CLAUDE.md",
+        "gemini" => "GEMINI.md",
+        _ => "AGENTS.md",
+    }
+}
+
+/// 获取 CLI 扫描时允许识别的规则文件名。
+/// 主文件名放在第一位，兼容文件名用于识别历史或跨 CLI 规则文件。
+pub fn rule_file_names_for_cli(cli: &str) -> Vec<&'static str> {
+    match cli {
+        "claude" => vec!["CLAUDE.md", "AGENTS.md"],
+        "gemini" => vec!["GEMINI.md", "AGENTS.md"],
+        "codex" => vec!["AGENTS.md"],
+        _ => vec!["AGENTS.md"],
+    }
+}
+
+/// 获取所有已存在 CLI 的 rules 根目录路径（每个 CLI 可能有多个）。
+pub fn all_existing_cli_rule_paths() -> HashMap<String, Vec<String>> {
+    let definitions = get_cli_rule_definitions();
+    let mut result: HashMap<String, Vec<String>> = HashMap::new();
+
+    for cli_name in CORE_CLI_NAMES {
+        if let Some(paths) = definitions.get(*cli_name) {
+            let existing: Vec<String> = paths.iter().filter(|p| path_exists(p)).cloned().collect();
+            if !existing.is_empty() {
+                result.insert(cli_name.to_string(), existing);
             }
         }
     }
-    Ok(result)
+
+    result
+}
+
+/// 解析指定 CLI 的 rules 根目录。
+pub fn resolve_cli_rule_path(cli: &str) -> Option<String> {
+    let definitions = get_cli_rule_definitions();
+    let paths = definitions.get(cli)?;
+
+    if let Some(existing) = paths.iter().find(|p| path_exists(p)) {
+        return Some(existing.clone());
+    }
+    if let Some(parent_exists) = paths.iter().find(|p| {
+        if let Some(parent) = std::path::Path::new(p).parent() {
+            parent.exists()
+        } else {
+            false
+        }
+    }) {
+        return Some(parent_exists.clone());
+    }
+    paths.first().cloned()
 }
 
 /// 扫描所有已存在且包含 skills 目录的 CLI
@@ -115,26 +151,19 @@ pub fn scan_all_clis() -> Vec<CliRow> {
 }
 
 /// 检测当前系统中实际存在的 CLIs
-/// 对每个内置/自定义 CLI，取其第一个存在的 skills 目录路径
+/// 对每个核心 CLI，取其第一个存在的 skills 目录路径
 
 /// 获取所有已存在 CLI 的 skills 目录路径（每个 CLI 可能有多个）
 pub fn all_existing_cli_paths() -> HashMap<String, Vec<String>> {
     let definitions = get_cli_definitions();
     let mut result: HashMap<String, Vec<String>> = HashMap::new();
 
-    // 按内置顺序优先
-    let mut ordered_keys: Vec<String> = BUILTIN_CLI_NAMES.iter().map(|s| s.to_string()).collect();
-    for key in definitions.keys() {
-        if !ordered_keys.contains(key) {
-            ordered_keys.push(key.clone());
-        }
-    }
-
-    for cli_name in ordered_keys {
-        if let Some(paths) = definitions.get(&cli_name) {
+    // 按核心顺序优先
+    for cli_name in CORE_CLI_NAMES {
+        if let Some(paths) = definitions.get(*cli_name) {
             let existing: Vec<String> = paths.iter().filter(|p| path_exists(p)).cloned().collect();
             if !existing.is_empty() {
-                result.insert(cli_name.clone(), existing);
+                result.insert(cli_name.to_string(), existing);
             }
         }
     }
@@ -146,22 +175,13 @@ pub fn detect_cli_rows() -> Vec<CliRow> {
     let definitions = get_cli_definitions();
     let mut rows = Vec::new();
 
-    // 按照 BUILTIN_CLI_NAMES 的顺序优先排列，自定义 CLI 排在后面
-    let mut ordered_keys: Vec<String> = BUILTIN_CLI_NAMES.iter().map(|s| s.to_string()).collect();
-
-    // 添加未在内置列表中的 key
-    for key in definitions.keys() {
-        if !ordered_keys.contains(key) {
-            ordered_keys.push(key.clone());
-        }
-    }
-
-    for cli_name in ordered_keys {
-        if let Some(paths) = definitions.get(&cli_name) {
+    // 按照 CORE_CLI_NAMES 的顺序排列
+    for cli_name in CORE_CLI_NAMES {
+        if let Some(paths) = definitions.get(*cli_name) {
             // 找到第一个存在的路径
             if let Some(existing_path) = paths.iter().find(|p| path_exists(p)) {
                 rows.push(CliRow {
-                    cli: cli_name.clone(),
+                    cli: cli_name.to_string(),
                     path: existing_path.clone(),
                 });
             }

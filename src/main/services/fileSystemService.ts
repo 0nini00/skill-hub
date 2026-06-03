@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+﻿import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -21,7 +21,7 @@ export function isDirectChildPath(child: string, parent: string): boolean {
 
 export function isLinkLike(targetPath: string): boolean {
   try {
-    return fs.lstatSync(targetPath).isSymbolicLink();
+    if (fs.lstatSync(targetPath).isSymbolicLink()) { return true; } if (process.platform === "win32" && isDirectory(targetPath)) { try { const real = fs.realpathSync(targetPath); return path.resolve(targetPath).toLowerCase() !== real.toLowerCase(); } catch { /* broken junction */ } } return false;
   } catch {
     return false;
   }

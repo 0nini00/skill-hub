@@ -1,7 +1,7 @@
-import { Bot, Download, FolderInput, Home, RefreshCw, Settings, Sparkles } from "lucide-react";
+import { Bot, Download, FolderInput, Home, RefreshCw, ScrollText, Settings, Sparkles } from "lucide-react";
 import { Button } from "../ui/Button";
 
-export type ViewId = "matrix" | "market" | "project" | "settings";
+export type ViewId = "skills" | "rules" | "market" | "project" | "settings";
 
 interface AppShellProps {
   view: ViewId;
@@ -17,8 +17,9 @@ interface AppShellProps {
 }
 
 const navItems = [
-  { id: "matrix" as const, label: "主页", icon: Home },
-  { id: "market" as const, label: "skills导入", icon: Download },
+  { id: "skills" as const, label: "Skills", icon: Home },
+  { id: "rules" as const, label: "Rules", icon: ScrollText },
+  { id: "market" as const, label: "导入", icon: Download },
   { id: "project" as const, label: "项目安装", icon: FolderInput },
   { id: "settings" as const, label: "设置", icon: Settings },
 ];
@@ -39,10 +40,10 @@ export function AppShell({
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <Bot size={28} aria-hidden="true" />
+          <div className="brand-mark"><Bot size={23} aria-hidden="true" /></div>
           <div>
             <h1>Skill Hub</h1>
-            <p>技能分发中心</p>
+            <p>技能 & 规则管理</p>
           </div>
         </div>
         <nav className="nav-list" aria-label="主导航">
@@ -65,7 +66,7 @@ export function AppShell({
           <Button icon={<RefreshCw size={16} />} onClick={onRefresh} disabled={loading}>
             刷新数据
           </Button>
-          {showSummaryAction ? (
+          {showSummaryAction && view === "skills" ? (
             <Button icon={<Sparkles size={16} />} onClick={onSummarize} disabled={loading}>
               {summaryLabel}
             </Button>
@@ -74,11 +75,32 @@ export function AppShell({
       </aside>
       <main className="workspace">
         <header className="workspace-header">
-          <h2>{title}</h2>
+          <div>
+            <h2>{title}</h2>
+            <p>{viewSubtitle(view)}</p>
+          </div>
         </header>
         <div className="workspace-body">{children}</div>
-        <footer className="status-bar">{status}</footer>
+        <footer className="status-bar">
+          <span className={`status-dot ${loading ? "loading" : ""}`} />
+          <span>{status || "就绪"}</span>
+        </footer>
       </main>
     </div>
   );
+}
+
+function viewSubtitle(view: ViewId): string {
+  switch (view) {
+    case "skills":
+      return "集中管理本地 Skills 与 CLI 启用状态";
+    case "rules":
+      return "维护全局规则库，并应用到指定 CLI";
+    case "market":
+      return "从 Git 或本地导入 Skill 与 Rule";
+    case "project":
+      return "将选中的 Skills 安装到项目目录";
+    case "settings":
+      return "配置摘要服务与 CLI 检测状态";
+  }
 }

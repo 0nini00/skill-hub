@@ -6,7 +6,7 @@ import { skillHubSkillsDir } from "../database/paths";
 import { getVisibleClis } from "./configService";
 import { detectCliRows, getCliDefinitions } from "./cliRegistryService";
 import { isDirectory } from "./fileSystemService";
-import { extractSkillName, extractSummaryFromSkillFile, slug } from "./skillUtils";
+import { extractSkillName, extractSummaryFromSkillFile, readSkillFrontmatter, slug } from "./skillUtils";
 
 interface SkillDbRow {
   name: string;
@@ -49,6 +49,7 @@ export function getNativeAppState(): AppState {
         category: getSkillCategory(sourcePath),
         path: sourcePath,
         linked: getLinkedClis(row.slug, detectedClis),
+        frontmatter: sourcePath ? readSkillFrontmatter(sourcePath) : undefined,
       };
     });
 

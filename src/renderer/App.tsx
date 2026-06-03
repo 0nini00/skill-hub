@@ -2,21 +2,22 @@ import { useEffect, useMemo, useState } from "react";
 import { AppShell, type ViewId } from "./components/layout/AppShell";
 import { MarketPage } from "./components/prompt/MarketPage";
 import { ProjectInstallPage } from "./components/folder/ProjectInstallPage";
-import { SettingsPage } from "./components/settings/SettingsPage";
+import { SettingsPageV2 } from "./components/settings/SettingsPageV2";
 import { SkillMatrix } from "./components/skill/SkillMatrix";
+import { RulesPageV2 } from "./components/rule/RulesPageV2";
 import { skillHubApi } from "./services/skillHubApi";
-import { formatAiSummaryStatus } from "./services/statusMessages";
 import { useSkillHubState } from "./stores/useSkillHubState";
 
 const viewTitles: Record<ViewId, string> = {
-  matrix: "主页",
-  market: "skills导入",
+  skills: "Skills 管理",
+  market: "导入 Skills",
   project: "项目安装",
+  rules: "Rules 管理",
   settings: "设置",
 };
 
 export function App() {
-  const [view, setView] = useState<ViewId>("matrix");
+  const [view, setView] = useState<ViewId>("skills");
   const {
     state,
     loading,
@@ -29,6 +30,11 @@ export function App() {
     setStatus,
   } = useSkillHubState();
 
+  // 只保留三个核心 CLI
+  const CORE_CLIS = ["claude", "codex", "gemini"];
+  const coreDetectedClis = state.detectedClis.filter(cli => CORE_CLIS.includes(cli.cli));
+  const coreVisibleClis = state.visibleClis.filter(cli => CORE_CLIS.includes(cli));
+
   useEffect(() => {
     refresh();
   }, [refresh]);
@@ -36,15 +42,9 @@ export function App() {
   const title = useMemo(() => viewTitles[view], [view]);
 
   async function summarizeCurrentView() {
-    setStatus("正在生成 AI 摘要…");
+    setStatus("正在生成 AI 摘要...");
     try {
-      // 对每个没有摘要的技能调用 AI 生成
-      for (const skill of visibleSkills) {
-        if (skill.summary && skill.summary.length > 5) continue;
-        // 简化：直接传空内容，后端会自动读取 SKILL.md
-        await skillHubApi.aiSummarize(skill.slug, "");
-        setStatus(`已生成: ${skill.name}`);
-      }
+      await skillHubApi.aiSummarize("", "");
       setStatus("AI 摘要生成完成");
       await refresh();
     } catch (e: any) {
@@ -64,12 +64,12 @@ export function App() {
       onRefresh={refresh}
       onSummarize={summarizeCurrentView}
     >
-      {view === "matrix" ? (
+      {view === "skills" ? (
         <SkillMatrix
           skills={visibleSkills}
           hiddenSkills={hiddenSkills}
-          detectedClis={state.detectedClis}
-          visibleClis={state.visibleClis}
+          detectedClis={coreDetectedClis}
+          visibleClis={coreVisibleClis}
           onRefresh={refresh}
           onRun={runAndRefresh}
         />
@@ -86,19 +86,24 @@ export function App() {
       {view === "project" ? (
         <ProjectInstallPage
           skills={visibleSkills}
-          detectedClis={state.detectedClis}
+          detectedClis={coreDetectedClis}
           onRun={runAndRefresh}
           onStatus={setStatus}
         />
       ) : null}
 
-      {view === "settings" ? (
-        <SettingsPage
-          detectedClis={state.detectedClis}
-          visibleClis={state.visibleClis}
+      {view === "rules" ? (
+        <RulesPageV2
+          detectedClis={coreDetectedClis}
+          visibleClis={coreVisibleClis}
           onRefresh={refresh}
-          onStatus={setStatus}
           onRun={runAndRefresh}
+        />
+      ) : null}
+
+      {view === "settings" ? (
+        <SettingsPageV2
+          onStatus={setStatus}
         />
       ) : null}
     </AppShell>

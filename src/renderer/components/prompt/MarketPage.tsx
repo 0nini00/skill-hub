@@ -1,3 +1,4 @@
+import { FileUp, Link2, Network } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { BackendResult } from "@shared/types/skill";
 import { skillHubApi } from "../../services/skillHubApi";
@@ -10,7 +11,7 @@ interface MarketPageProps {
   onRun(args: string[], successMessage: string | ((result: BackendResult) => string)): Promise<BackendResult>;
 }
 
-export function MarketPage({ onRefreshApp, onStatus, onRun }: MarketPageProps) {
+export function MarketPage({ onRefreshApp, onStatus }: MarketPageProps) {
   const [repoUrl, setRepoUrl] = useState("");
   const [proxy, setProxy] = useState("");
 
@@ -54,44 +55,79 @@ export function MarketPage({ onRefreshApp, onStatus, onRun }: MarketPageProps) {
     }
   }
 
+  async function importLocal() {
+    try {
+      const result = await skillHubApi.importLocal();
+      if (result.ok) {
+        const { type, name } = result.data || {};
+        if (type === "skill") {
+          onStatus(`Skill「${name}」已导入`);
+        } else if (type === "rule") {
+          onStatus(`Rule「${name}」已导入`);
+        } else {
+          onStatus("导入成功");
+        }
+        onRefreshApp();
+      } else {
+        onStatus(result.message || "导入失败");
+      }
+    } catch (e: any) {
+      onStatus(`导入失败: ${e.message || e}`);
+    }
+  }
+
   return (
     <div className="page-stack">
-      <section className="panel">
-        <div className="section-heading">
-          <div>
-            <h3>网络代理</h3>
-            <p>Git 下载和 AI 摘要请求会优先使用这里的代理地址。</p>
+      <section className="panel import-console">
+        <div className="import-actions-grid">
+          <div className="import-action-card primary-import-card">
+            <div className="import-card-header">
+              <span className="card-icon"><Link2 size={18} /></span>
+              <div>
+                <h3>从 Git 导入</h3>
+                <p>输入仓库地址，自动拉取并加入 Skill Hub。</p>
+              </div>
+            </div>
+            <div className="import-inline-control">
+              <TextInput
+                value={repoUrl}
+                onChange={(event) => setRepoUrl(event.target.value)}
+                placeholder="https://github.com/example/skill-repo"
+              />
+              <Button variant="primary" icon={<Link2 size={16} />} onClick={installUrl}>导入</Button>
+            </div>
           </div>
-        </div>
-        <div className="inline-form">
-          <TextInput
-            label="代理地址"
-            value={proxy}
-            onChange={(event) => setProxy(event.target.value)}
-            placeholder="http://127.0.0.1:7890"
-          />
-          <Button variant="primary" onClick={saveProxy}>
-            保存代理
-          </Button>
-        </div>
-      </section>
 
-      <section className="panel">
-        <div className="section-heading">
-          <div>
-            <h3>添加单个 Skill</h3>
-            <p>粘贴包含 SKILL.md 的 Git 仓库链接。</p>
+          <div className="import-action-card local-import-card">
+            <div className="import-card-header">
+              <span className="card-icon"><FileUp size={18} /></span>
+              <div>
+                <h3>从本地导入</h3>
+                <p>选择本地 Skill 或 Rule 文件。</p>
+              </div>
+            </div>
+            <Button variant="success" icon={<FileUp size={16} />} onClick={importLocal}>
+              选择文件或文件夹
+            </Button>
           </div>
         </div>
-        <div className="inline-form">
-          <TextInput
-            value={repoUrl}
-            onChange={(event) => setRepoUrl(event.target.value)}
-            placeholder="https://github.com/example/skill-repo"
-          />
-          <Button variant="primary" onClick={installUrl}>
-            添加到技能库
-          </Button>
+
+        <div className="proxy-strip">
+          <div className="proxy-strip-title">
+            <span className="card-icon small-card-icon"><Network size={15} /></span>
+            <div>
+              <strong>网络代理</strong>
+              <span>用于 Git 下载和摘要请求</span>
+            </div>
+          </div>
+          <div className="proxy-strip-control">
+            <TextInput
+              value={proxy}
+              onChange={(event) => setProxy(event.target.value)}
+              placeholder="http://127.0.0.1:7890"
+            />
+            <Button onClick={saveProxy}>保存</Button>
+          </div>
         </div>
       </section>
     </div>

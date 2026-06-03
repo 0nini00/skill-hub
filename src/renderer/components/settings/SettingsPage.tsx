@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { CliRow } from "@shared/types/skill";
+import type { BackendResult, CliRow } from "@shared/types/skill";
 import { skillHubApi } from "../../services/skillHubApi";
 import { Button } from "../ui/Button";
 import { TextInput } from "../ui/TextInput";
@@ -9,7 +9,7 @@ interface SettingsPageProps {
   visibleClis: string[];
   onRefresh(): void;
   onStatus(message: string): void;
-  onRun(args: string[], successMessage: string): Promise<unknown>;
+  onRun(args: string[], successMessage: string): Promise<BackendResult>;
 }
 
 export function SettingsPage({ detectedClis, visibleClis, onRefresh, onStatus, onRun }: SettingsPageProps) {
@@ -18,6 +18,7 @@ export function SettingsPage({ detectedClis, visibleClis, onRefresh, onStatus, o
   const [model, setModel] = useState("");
   const [customName, setCustomName] = useState("");
   const [customPath, setCustomPath] = useState("");
+  const [proxy, setProxy] = useState("");
   const [customClis, setCustomClis] = useState<Record<string, string[]>>({});
   const [selectedClis, setSelectedClis] = useState<string[]>([]);
 
@@ -37,6 +38,7 @@ export function SettingsPage({ detectedClis, visibleClis, onRefresh, onStatus, o
       setApiUrl(config.api_url ?? "");
       setApiKey(config.api_key ?? "");
       setModel(config.model ?? "");
+      setProxy(config.proxy ?? "");
     }).catch((err) => {
       console.error("getAiConfig error:", err);
     });
@@ -53,12 +55,11 @@ export function SettingsPage({ detectedClis, visibleClis, onRefresh, onStatus, o
   );
 
   async function saveAiConfig() {
-    const currentConfig = await skillHubApi.getAiConfig();
     const result = await skillHubApi.setAiConfig({
       api_url: apiUrl,
       api_key: apiKey,
       model,
-      proxy: currentConfig.proxy ?? "",
+      proxy,
     });
     onStatus(result.ok ? "AI 配置已保存" : result.message || "AI 配置保存失败");
   }

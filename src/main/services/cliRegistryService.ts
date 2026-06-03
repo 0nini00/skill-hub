@@ -2,44 +2,55 @@ import fs from "node:fs";
 import path from "node:path";
 import type { CliRow } from "../../shared/types/skill";
 import { userHome } from "../database/paths";
-import { getConfig } from "./configService";
+
+// 只支持三个核心 CLI
+export function getCliRuleDefinitions(): Record<string, string[]> {
+  return {
+    claude: [
+      path.join(userHome, ".claude"),
+      path.join(userHome, "AppData", "Roaming", "Claude"),
+      path.join(userHome, ".config", "claude"),
+    ],
+    codex: [
+      path.join(userHome, ".codex"),
+      path.join(userHome, ".config", "codex"),
+    ],
+    gemini: [
+      path.join(userHome, ".gemini"),
+      path.join(userHome, ".config", "gemini"),
+    ],
+  };
+}
+
+export function getRuleFileNameForCli(cli: string): string {
+  if (cli === "claude") return "CLAUDE.md";
+  if (cli === "gemini") return "GEMINI.md";
+  return "AGENTS.md";
+}
+
+export function getRuleFileNamesForCli(cli: string): string[] {
+  if (cli === "claude") return ["CLAUDE.md", "AGENTS.md"];
+  if (cli === "gemini") return ["GEMINI.md", "AGENTS.md"];
+  return ["AGENTS.md"];
+}
 
 export function getCliDefinitions(): Record<string, string[]> {
   const definitions: Record<string, string[]> = {
-    alma: [path.join(userHome, ".config", "alma", "skills"), path.join(userHome, ".alma", "skills")],
     claude: [
       path.join(userHome, ".claude", "skills"),
       path.join(userHome, "AppData", "Roaming", "Claude", "skills"),
       path.join(userHome, ".config", "claude", "skills"),
     ],
-    cursor: [
-      path.join(userHome, ".config", "cursor", "skills"),
-      path.join(userHome, "AppData", "Roaming", "Cursor", "skills"),
-      path.join(userHome, ".cursor", "skills"),
+    codex: [
+      path.join(userHome, ".codex", "skills"),
+      path.join(userHome, ".config", "codex", "skills"),
     ],
-    continue: [
-      path.join(userHome, ".continue", "skills"),
-      path.join(userHome, ".continue", "prompts"),
-      path.join(userHome, ".config", "continue", "skills"),
-    ],
-    gemini: [path.join(userHome, ".gemini", "skills"), path.join(userHome, ".config", "gemini", "skills")],
-    codex: [path.join(userHome, ".codex", "skills"), path.join(userHome, ".config", "codex", "skills")],
-    aion: [
-      path.join(userHome, "AppData", "Roaming", "AionUi", "config", "skills"),
-      path.join(userHome, ".config", "aion", "skills"),
-      path.join(userHome, ".aion", "skills"),
+    gemini: [
+      path.join(userHome, ".gemini", "skills"),
+      path.join(userHome, ".config", "gemini", "skills"),
     ],
   };
 
-  const customClis = getConfig().custom_clis ?? {};
-  for (const [name, paths] of Object.entries(customClis)) {
-    if (!Array.isArray(paths)) continue;
-    if (name in definitions) {
-      console.warn(`[skill-hub] 自定义 CLI "${name}" 与内置同名，已忽略以保护内置定义`);
-      continue;
-    }
-    definitions[name] = paths;
-  }
   return definitions;
 }
 

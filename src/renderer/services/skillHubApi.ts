@@ -1,6 +1,7 @@
-import { invoke } from "@tauri-apps/api/core";
+﻿import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import type { AiConfig, AppState, BackendResult } from "@shared/types/skill";
+import type { AiConfig, AppState, BackendResult, SkillFileEntry, SkillSafetyReport } from "@shared/types/skill";
+import type { RuleRow, CliRuleStatus } from "@shared/types/rule";
 
 function isTauri(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -68,14 +69,14 @@ export const skillHubApi = {
     if (isTauri()) {
       return invoke<BackendResult>("link_skill", { cli, slug });
     }
-    return window.skillHub.runBackend(["link", cli, slug]);
+    return window.skillHub.runBackend(["link-skill", slug, cli]);
   },
 
   async unlinkSkill(cli: string, slug: string): Promise<BackendResult> {
     if (isTauri()) {
       return invoke<BackendResult>("unlink_skill", { cli, slug });
     }
-    return window.skillHub.runBackend(["unlink", cli, slug]);
+    return window.skillHub.runBackend(["unlink-skill", slug, cli]);
   },
 
   async hideSkill(slug: string): Promise<BackendResult> {
@@ -103,14 +104,28 @@ export const skillHubApi = {
     if (isTauri()) {
       return invoke<BackendResult<{ slug: string }>>("git_import", { url });
     }
-    return window.skillHub.runBackend(["git-import", url]);
+    return window.skillHub.runBackend(["install-url", "--url", url]);
+  },
+
+  async importLocal(): Promise<BackendResult<{ type: "skill" | "rule"; name: string }>> {
+    if (isTauri()) {
+      return invoke<BackendResult<{ type: "skill" | "rule"; name: string }>>("import_local");
+    }
+    // Electron fallback - not implemented
+    return {
+      ok: false,
+      data: null,
+      stdout: "",
+      stderr: "Electron 版本暂不支持本地导入",
+      message: "Electron 版本暂不支持本地导入",
+    };
   },
 
   async aiSummarize(slug: string, content: string): Promise<BackendResult> {
     if (isTauri()) {
       return invoke<BackendResult>("ai_summarize", { slug, content });
     }
-    return window.skillHub.runBackend(["ai-summarize", slug]);
+    return window.skillHub.runBackend(["auto-summarize"]);
   },
 
   async installSkillsToProject(projectPath: string, slugs: string[], clis: string[]): Promise<BackendResult> {
@@ -130,5 +145,103 @@ export const skillHubApi = {
       return invoke<BackendResult>("set_visible_clis", { clis: clis.join(",") });
     }
     return window.skillHub.runBackend(["set-visible-clis", "--clis", clis.join(",")]);
+  },
+
+  async listSkillFiles(slug: string): Promise<SkillFileEntry[]> {
+    if (isTauri()) {
+      return invoke<SkillFileEntry[]>("list_skill_files", { slug });
+    }
+    return window.skillHub.listSkillFiles(slug);
+  },
+
+  async readSkillFile(slug: string, relativePath: string): Promise<string | null> {
+    if (isTauri()) {
+      return invoke<string | null>("read_skill_file", { slug, relativePath });
+    }
+    return window.skillHub.readSkillFile(slug, relativePath);
+  },
+
+  async writeSkillFile(slug: string, relativePath: string, content: string): Promise<boolean> {
+    if (isTauri()) {
+      return invoke<boolean>("write_skill_file", { slug, relativePath, content });
+    }
+    return window.skillHub.writeSkillFile(slug, relativePath, content);
+  },
+
+  async deleteSkillFile(slug: string, relativePath: string): Promise<boolean> {
+    if (isTauri()) {
+      return invoke<boolean>("delete_skill_file", { slug, relativePath });
+    }
+    return window.skillHub.deleteSkillFile(slug, relativePath);
+  },
+
+  async scanSkillSafety(slug: string): Promise<SkillSafetyReport | null> {
+    if (isTauri()) {
+      return invoke<SkillSafetyReport | null>("scan_skill_safety", { slug });
+    }
+    return window.skillHub.scanSkillSafety(slug);
+  },
+
+  async exportSkill(slug: string, format: "skill-md" | "json" = "skill-md"): Promise<string> {
+    if (isTauri()) {
+      return invoke<string>("export_skill", { slug, format });
+    }
+    return window.skillHub.exportSkill(slug, format);
+  },
+
+  async listRules(): Promise<RuleRow[]> {
+    if (isTauri()) {
+      return invoke<RuleRow[]>("list_rules");
+    }
+    return window.skillHub.listRules();
+  },
+
+  async readRule(slug: string): Promise<string | null> {
+    if (isTauri()) {
+      return invoke<string | null>("read_rule", { slug });
+    }
+    return window.skillHub.readRule(slug);
+  },
+
+  async writeRule(slug: string, content: string): Promise<string> {
+    if (isTauri()) {
+      return invoke<string>("write_rule", { slug, content });
+    }
+    return window.skillHub.writeRule(slug, content);
+  },
+
+  async createRule(name: string, content: string): Promise<RuleRow> {
+    if (isTauri()) {
+      return invoke<RuleRow>("create_rule", { name, content });
+    }
+    return window.skillHub.createRule(name, content);
+  },
+
+  async deleteRule(slug: string): Promise<void> {
+    if (isTauri()) {
+      return invoke<void>("delete_rule", { slug });
+    }
+    return window.skillHub.deleteRule(slug);
+  },
+
+  async linkRule(slug: string, cli: string): Promise<string> {
+    if (isTauri()) {
+      return invoke<string>("link_rule", { slug, cli });
+    }
+    return window.skillHub.linkRule(slug, cli);
+  },
+
+  async unlinkRule(slug: string, cli: string): Promise<boolean> {
+    if (isTauri()) {
+      return invoke<boolean>("unlink_rule", { slug, cli });
+    }
+    return window.skillHub.unlinkRule(slug, cli);
+  },
+
+  async getCliRuleStatus(): Promise<CliRuleStatus[]> {
+    if (isTauri()) {
+      return invoke<CliRuleStatus[]>("get_cli_rule_status");
+    }
+    return window.skillHub.getCliRuleStatus();
   },
 };

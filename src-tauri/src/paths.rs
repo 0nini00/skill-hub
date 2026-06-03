@@ -30,6 +30,11 @@ pub fn ai_config_path() -> Result<PathBuf, String> {
 }
 
 /// skills 目录: ~/.config/skill-hub/skills
+pub fn rules_dir() -> Result<std::path::PathBuf, String> {
+    let dir = base_dir()?.join("rules");
+    Ok(dir)
+}
+
 pub fn skills_dir() -> Result<PathBuf, String> {
     Ok(base_dir()?.join("skills"))
 }

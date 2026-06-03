@@ -8,6 +8,7 @@ export const skillHubDbPath = path.join(skillHubBaseDir, "usage.db");
 export const skillHubSkillsDir = path.join(skillHubBaseDir, "skills");
 export const skillHubAdaptersDir = path.join(skillHubBaseDir, "adapters");
 export const skillHubReposDir = path.join(skillHubBaseDir, "repos");
+export const skillHubRulesDir = path.join(skillHubBaseDir, "rules");
 export const skillHubSingleReposDir = path.join(skillHubBaseDir, "single-repos");
 export const skillHubConfigPath = path.join(skillHubBaseDir, "config.json");
 export const skillHubAiConfigPath = path.join(skillHubBaseDir, "ai_config.json");
