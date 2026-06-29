@@ -4,8 +4,8 @@ use std::fs;
 use crate::paths::user_home_dir;
 use crate::types::CliRow;
 
-/// 只支持三个核心 CLI
-pub const CORE_CLI_NAMES: &[&str] = &["claude", "codex", "gemini"];
+/// 核心 CLI 列表
+pub const CORE_CLI_NAMES: &[&str] = &["claude", "codex", "gemini", "cursor"];
 
 /// 核心 CLI 定义：每个 CLI 名映射到其 skills 目录的可能路径列表
 pub fn get_cli_definitions() -> HashMap<String, Vec<String>> {
@@ -45,8 +45,27 @@ pub fn get_cli_definitions() -> HashMap<String, Vec<String>> {
         ],
     );
 
+    // cursor
+
+    definitions.insert(
+
+        "cursor".to_string(),
+
+        vec![
+
+            format!("{}/.cursor/skills", home_str),
+
+        ],
+
+    );
+
+
+
     definitions
+
 }
+
+
 
 /// 核心 CLI 定义：每个 CLI 名映射到其 rules 根目录的可能路径列表
 /// 注意：rules 文件位于 CLI 根目录，不在 skills 子目录中。
@@ -81,6 +100,14 @@ pub fn get_cli_rule_definitions() -> HashMap<String, Vec<String>> {
         vec![
             format!("{}/.gemini", home_str),
             format!("{}/.config/gemini", home_str),
+        ],
+    );
+
+    // cursor
+    definitions.insert(
+        "cursor".to_string(),
+        vec![
+            format!("{}/.cursor", home_str),
         ],
     );
 

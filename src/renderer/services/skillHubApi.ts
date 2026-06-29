@@ -1,6 +1,6 @@
 ﻿import { invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
-import type { AiConfig, AppState, BackendResult, SkillFileEntry, SkillSafetyReport } from "@shared/types/skill";
+import type { AiConfig, AppState, BackendResult, SkillFileEntry, SkillHubConfig, SkillSafetyReport } from "@shared/types/skill";
 import type { RuleRow, CliRuleStatus } from "@shared/types/rule";
 
 function isTauri(): boolean {
@@ -39,6 +39,13 @@ export const skillHubApi = {
       return invoke<AiConfig>("read_ai_config");
     }
     return window.skillHub.getAiConfig();
+  },
+
+  async getConfig(): Promise<SkillHubConfig> {
+    if (isTauri()) {
+      return invoke<SkillHubConfig>("read_config");
+    }
+    throw new Error("仅在 Tauri 中可用");
   },
 
   async setAiConfig(config: Required<AiConfig>): Promise<BackendResult> {
@@ -141,11 +148,32 @@ export const skillHubApi = {
   },
 
   async setVisibleClis(clis: string[]): Promise<BackendResult> {
+
     if (isTauri()) {
+
       return invoke<BackendResult>("set_visible_clis", { clis: clis.join(",") });
+
     }
+
     return window.skillHub.runBackend(["set-visible-clis", "--clis", clis.join(",")]);
+
   },
+
+
+
+  async setLinkMode(mode: string): Promise<BackendResult<{ mode: string; converted: number; errors: string[] }>> {
+
+    if (isTauri()) {
+
+      return invoke("set_link_mode", { mode });
+
+    }
+
+    throw new Error("仅在 Tauri 中可用");
+
+  },
+
+
 
   async listSkillFiles(slug: string): Promise<SkillFileEntry[]> {
     if (isTauri()) {
@@ -221,10 +249,17 @@ export const skillHubApi = {
     if (isTauri()) {
       return invoke<void>("delete_rule", { slug });
     }
-    return window.skillHub.deleteRule(slug);
-  },
+      return window.skillHub.deleteRule(slug);
+    },
 
-  async linkRule(slug: string, cli: string): Promise<string> {
+    async renameRule(oldSlug: string, newName: string): Promise<{ oldSlug: string; newSlug: string; newName: string; path: string }> {
+      if (isTauri()) {
+        return invoke<{ oldSlug: string; newSlug: string; newName: string; path: string }>("rename_rule", { oldSlug, newName });
+      }
+      throw new Error("Electron 版本暂不支持规则重命名");
+    },
+
+    async linkRule(slug: string, cli: string): Promise<string> {
     if (isTauri()) {
       return invoke<string>("link_rule", { slug, cli });
     }

@@ -85,10 +85,18 @@ export function RulesPageV2({ detectedClis, onRefresh }: RulesPageV2Props) {
           setEditorSlug(null);
           loadRules();
         }}
-        onSave={async (slug, content) => {
+        onSave={async (oldSlug, slug, content, newName) => {
           if (isNew) {
             await skillHubApi.createRule(slug, content);
           } else {
+            if (newName) {
+              const result = await skillHubApi.renameRule(oldSlug, newName);
+              await skillHubApi.writeRule(result.newSlug, content);
+              setEditorSlug(result.newSlug);
+              setEditorName(result.newName);
+              loadRules();
+              return;
+            }
             await skillHubApi.writeRule(slug, content);
           }
         }}

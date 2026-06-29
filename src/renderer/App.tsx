@@ -30,10 +30,14 @@ export function App() {
     setStatus,
   } = useSkillHubState();
 
-  // 只保留三个核心 CLI
-  const CORE_CLIS = ["claude", "codex", "gemini"];
-  const coreDetectedClis = state.detectedClis.filter(cli => CORE_CLIS.includes(cli.cli));
-  const coreVisibleClis = state.visibleClis.filter(cli => CORE_CLIS.includes(cli));
+  // 使用配置中的 visible_clis，未配置则显示所有检测到的 CLI
+  const visibleCliNames = state.visibleClis.length > 0
+    ? state.visibleClis
+    : state.detectedClis.map(c => c.cli);
+  const coreDetectedClis = state.detectedClis.filter(cli => visibleCliNames.includes(cli.cli));
+  const coreVisibleClis = state.visibleClis.length > 0
+    ? state.visibleClis.filter(cli => visibleCliNames.includes(cli))
+    : state.detectedClis.map(c => c.cli);
 
   useEffect(() => {
     refresh();

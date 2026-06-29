@@ -84,3 +84,10 @@ export interface AiConfig {
   model?: string;
   proxy?: string;
 }
+
+export interface SkillHubConfig {
+  custom_clis?: unknown;
+  visible_clis?: string[];
+  hidden_skills?: string[];
+  link_mode?: string;
+}

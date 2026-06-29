@@ -46,13 +46,31 @@ pub struct BackendResult<T> {
 }
 
 /// Skill Hub 配置（~/.config/skill-hub/config.json）
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SkillHubConfig {
     pub custom_clis: Option<serde_json::Value>,
     pub visible_clis: Option<Vec<String>>,
     /// 隐藏的技能 slug 列表
     #[serde(default)]
     pub hidden_skills: Vec<String>,
+    /// 链接模式："symlink"（软链接）或 "copy"（复制），默认 copy
+    #[serde(default = "default_link_mode")]
+    pub link_mode: String,
+}
+
+fn default_link_mode() -> String {
+    "copy".to_string()
+}
+
+impl Default for SkillHubConfig {
+    fn default() -> Self {
+        Self {
+            custom_clis: None,
+            visible_clis: None,
+            hidden_skills: Vec::new(),
+            link_mode: default_link_mode(),
+        }
+    }
 }
 
 /// AI 配置（~/.config/skill-hub/ai_config.json）

@@ -1,6 +1,8 @@
 mod cli_registry;
 mod paths;
 mod types;
+mod market;
+mod market_commands;
 
 use std::collections::HashSet;
 use std::fs;
@@ -11,6 +13,7 @@ use serde::{Deserialize, Serialize};
 pub use cli_registry::*;
 pub use paths::*;
 pub use types::*;
+pub use market_commands::*;
 
 // ---------------------------------------------------------------------------
 // BackendResult helpers
@@ -134,6 +137,285 @@ fn slug_from_dir_name(name: &str) -> String {
     name.trim().to_lowercase().replace(' ', "-")
 }
 
+fn safe_skill_child_path(skill_path: &Path, relative_path: &str) -> Option<PathBuf> {
+    if relative_path.is_empty() {
+        return None;
+    }
+
+    let mut full = skill_path.to_path_buf();
+    for component in Path::new(relative_path).components() {
+        match component {
+            std::path::Component::Normal(part) => full.push(part),
+            std::path::Component::CurDir => {}
+            _ => return None,
+        }
+    }
+    Some(full)
+}
+
+pub(crate) fn ensure_standard_skill_md_name(skill_dir: &Path) -> Result<(), String> {
+    let standard = skill_dir.join("SKILL.md");
+    if standard.is_file() {
+        return Ok(());
+    }
+
+    let entries = std::fs::read_dir(skill_dir)
+        .map_err(|e| format!("读取 skill 目录失败: {e}"))?;
+
+    for entry in entries.flatten() {
+        let name = entry.file_name().to_string_lossy().to_string();
+        if !name.eq_ignore_ascii_case("SKILL.md") {
+            continue;
+        }
+
+        let source = entry.path();
+        std::fs::rename(&source, &standard)
+            .or_else(|_| {
+                std::fs::copy(&source, &standard)?;
+                std::fs::remove_file(&source)
+            })
+            .map_err(|e| format!("规范化 SKILL.md 文件名失败: {e}"))?;
+        break;
+    }
+
+    Ok(())
+}
+
+/// 获取技能目录中所有文件的最后修改时间。
+fn get_skill_modified_time(dir: &Path) -> Option<std::time::SystemTime> {
+    let entries = std::fs::read_dir(dir).ok()?;
+    let mut newest = None;
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let Ok(file_type) = entry.file_type() else {
+            continue;
+        };
+
+        let candidate = if file_type.is_dir() {
+            get_skill_modified_time(&path)
+        } else if file_type.is_file() {
+            entry.metadata().ok().and_then(|m| m.modified().ok())
+        } else {
+            None
+        };
+
+        if let Some(time) = candidate {
+            if newest.map_or(true, |current| time > current) {
+                newest = Some(time);
+            }
+        }
+    }
+
+    newest
+}
+
+fn paths_refer_to_same_location(a: &Path, b: &Path) -> bool {
+    let canonical_a = fs::canonicalize(a).unwrap_or_else(|_| a.to_path_buf());
+    let canonical_b = fs::canonicalize(b).unwrap_or_else(|_| b.to_path_buf());
+    canonical_a == canonical_b
+}
+
+fn sync_cli_skills_to_hub(
+    hub_dir: &Path,
+    hub_skills: &mut std::collections::HashMap<String, PathBuf>,
+    external_skills: &std::collections::HashMap<String, Vec<(String, PathBuf)>>,
+) {
+    let mut all_sync_slugs: HashSet<String> = HashSet::new();
+    for slug in hub_skills.keys() {
+        all_sync_slugs.insert(slug.clone());
+    }
+    for slug in external_skills.keys() {
+        all_sync_slugs.insert(slug.clone());
+    }
+
+    for slug in &all_sync_slugs {
+        let cli_paths = external_skills.get(slug).cloned().unwrap_or_default();
+
+        let mut newest_time: Option<std::time::SystemTime> = None;
+        let mut newest_name = String::new();
+        let mut newest_path: Option<PathBuf> = None;
+
+        if let Some(hub_path) = hub_skills.get(slug) {
+            if let Some(t) = get_skill_modified_time(hub_path) {
+                newest_time = Some(t);
+                newest_name = "hub".to_string();
+                newest_path = Some(hub_path.clone());
+            }
+        }
+
+        for (cli_name, cli_dir) in &cli_paths {
+            if let Some(t) = get_skill_modified_time(cli_dir) {
+                if newest_time.is_none() || t > newest_time.unwrap() {
+                    newest_time = Some(t);
+                    newest_name = cli_name.clone();
+                    newest_path = Some(cli_dir.clone());
+                }
+            }
+        }
+
+        let Some(newest_src) = newest_path else {
+            continue;
+        };
+        let newest_is_hub = newest_name == "hub";
+
+        if !newest_is_hub {
+            let hub_target = hub_dir.join(slug);
+            eprintln!("[sync] {} 最新版在 {}，同步到 hub: {:?}", slug, newest_name, hub_target);
+            if hub_target.exists() {
+                let _ = std::fs::remove_dir_all(&hub_target);
+            }
+            if let Err(e) = copy_dir_recursive(&newest_src, &hub_target) {
+                eprintln!("[sync] 同步到 hub 失败 {}: {}", slug, e);
+                continue;
+            }
+            hub_skills.insert(slug.clone(), hub_target);
+        }
+
+        let hub_skill_path = match hub_skills.get(slug) {
+            Some(p) => p.clone(),
+            None => continue,
+        };
+        let hub_time = get_skill_modified_time(&hub_skill_path);
+
+        for (cli_name, cli_dir) in &cli_paths {
+            if !newest_is_hub && paths_refer_to_same_location(cli_dir, &newest_src) {
+                continue;
+            }
+
+            let cli_time = get_skill_modified_time(cli_dir);
+            if cli_time.is_none() || hub_time.is_none() || cli_time.unwrap() < hub_time.unwrap() {
+                eprintln!("[sync] {} 推送到 {} ({:?})", slug, cli_name, cli_dir);
+                if cli_dir.exists() {
+                    let _ = std::fs::remove_dir_all(cli_dir);
+                }
+                if let Err(e) = copy_dir_recursive(&hub_skill_path, cli_dir) {
+                    eprintln!("[sync] 推送到 {} 失败: {}", cli_name, e);
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn unique_test_dir(name: &str) -> PathBuf {
+        let id = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("system time should be after unix epoch")
+            .as_nanos();
+        std::env::temp_dir().join(format!("skill-hub-{name}-{}-{id}", std::process::id()))
+    }
+
+    #[test]
+    fn sync_imports_cli_only_skill_into_hub() {
+        let root = unique_test_dir("cli-only-import");
+        let hub_dir = root.join("hub").join("skills");
+        let codex_skill_dir = root.join("codex").join("skills").join("file-operations");
+        let nested_dir = codex_skill_dir.join("references");
+
+        std::fs::create_dir_all(&nested_dir).expect("create test skill dirs");
+        std::fs::write(
+            codex_skill_dir.join("SKILL.md"),
+            "---\nname: file-operations\n---\n",
+        )
+        .expect("write SKILL.md");
+        std::fs::write(nested_dir.join("note.txt"), "kept").expect("write nested file");
+
+        let mut hub_skills = std::collections::HashMap::new();
+        let mut external_skills = std::collections::HashMap::new();
+        external_skills.insert(
+            "file-operations".to_string(),
+            vec![("codex".to_string(), codex_skill_dir.clone())],
+        );
+
+        sync_cli_skills_to_hub(&hub_dir, &mut hub_skills, &external_skills);
+
+        let imported = hub_dir.join("file-operations");
+        assert!(imported.join("SKILL.md").is_file());
+        assert_eq!(
+            std::fs::read_to_string(imported.join("references").join("note.txt"))
+                .expect("read imported nested file"),
+            "kept"
+        );
+        assert_eq!(hub_skills.get("file-operations"), Some(&imported));
+
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn sync_prefers_cli_when_nested_file_is_newer_than_hub_skill_md() {
+        let root = unique_test_dir("nested-mtime-sync");
+        let hub_dir = root.join("hub").join("skills");
+        let hub_skill_dir = hub_dir.join("file-operations");
+        let cli_skill_dir = root.join("codex").join("skills").join("file-operations");
+
+        std::fs::create_dir_all(hub_skill_dir.join("references")).expect("create hub skill");
+        std::fs::create_dir_all(cli_skill_dir.join("references")).expect("create cli skill");
+
+        std::fs::write(cli_skill_dir.join("SKILL.md"), "---\nname: file-operations\n---\n")
+            .expect("write cli SKILL.md");
+        std::thread::sleep(std::time::Duration::from_millis(20));
+        std::fs::write(hub_skill_dir.join("SKILL.md"), "---\nname: file-operations\n---\n")
+            .expect("write hub SKILL.md");
+        std::fs::write(hub_skill_dir.join("references").join("note.txt"), "old")
+            .expect("write old hub nested file");
+        std::thread::sleep(std::time::Duration::from_millis(20));
+        std::fs::write(cli_skill_dir.join("references").join("note.txt"), "new")
+            .expect("write new cli nested file");
+
+        let mut hub_skills = std::collections::HashMap::new();
+        hub_skills.insert("file-operations".to_string(), hub_skill_dir.clone());
+        let mut external_skills = std::collections::HashMap::new();
+        external_skills.insert(
+            "file-operations".to_string(),
+            vec![("codex".to_string(), cli_skill_dir.clone())],
+        );
+
+        sync_cli_skills_to_hub(&hub_dir, &mut hub_skills, &external_skills);
+
+        assert_eq!(
+            std::fs::read_to_string(hub_skill_dir.join("references").join("note.txt"))
+                .expect("read synced nested file"),
+            "new"
+        );
+
+        let _ = std::fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn safe_skill_child_path_rejects_parent_components() {
+        let base = PathBuf::from("skill-root");
+
+        assert!(safe_skill_child_path(&base, "../outside.md").is_none());
+        assert!(safe_skill_child_path(&base, "nested/../../outside.md").is_none());
+        assert_eq!(
+            safe_skill_child_path(&base, "references/note.md"),
+            Some(base.join("references").join("note.md"))
+        );
+    }
+
+    #[test]
+    fn ensure_standard_skill_md_name_renames_lowercase_file() {
+        let root = unique_test_dir("lowercase-skill-md");
+        let skill_dir = root.join("skill");
+        std::fs::create_dir_all(&skill_dir).expect("create skill dir");
+        std::fs::write(skill_dir.join("skill.md"), "lowercase").expect("write lowercase skill");
+
+        ensure_standard_skill_md_name(&skill_dir).expect("normalize skill filename");
+
+        assert_eq!(
+            std::fs::read_to_string(skill_dir.join("SKILL.md")).expect("read normalized skill"),
+            "lowercase"
+        );
+        assert!(!skill_dir.join("skill.md").exists());
+
+        let _ = std::fs::remove_dir_all(root);
+    }
+}
+
 // ---------------------------------------------------------------------------
 // get_full_app_state
 // ---------------------------------------------------------------------------
@@ -211,24 +493,8 @@ fn get_full_app_state() -> Result<AppState, String> {
         }
     }
 
-    // 自动导入：将 CLI 中存在但 Hub 中不存在的 skills 复制到 Hub
-    for (slug, cli_paths) in &external_skills {
-        if !hub_skills.contains_key(slug) {
-            // 选择第一个 CLI 路径作为源
-            if let Some((_, source_path)) = cli_paths.first() {
-                let hub_target = hub_dir.join(slug);
-                eprintln!("[auto_import] 自动导入 {} 从 {:?} 到 {:?}", slug, source_path, hub_target);
-
-                // 复制目录
-                if let Err(e) = copy_dir_recursive(source_path, &hub_target) {
-                    eprintln!("[auto_import] 导入失败 {}: {}", slug, e);
-                } else {
-                    // 导入成功，添加到 hub_skills
-                    hub_skills.insert(slug.clone(), hub_target);
-                }
-            }
-        }
-    }
+    // 自动同步：最新版赢，hub 当中转站。
+    sync_cli_skills_to_hub(&hub_dir, &mut hub_skills, &external_skills);
 
     // 合并 slug 集合
     let mut all_slugs: Vec<String> = hub_skills.keys().cloned().collect();
@@ -405,24 +671,6 @@ async fn pick_directory(window: tauri::Window) -> Result<Option<String>, String>
 }
 
 // 递归复制目录
-fn copy_dir_all(src: &Path, dst: &Path) -> Result<(), String> {
-    if !dst.exists() {
-        fs::create_dir_all(dst).map_err(|e| format!("创建目录失败: {e}"))?;
-    }
-    for entry in fs::read_dir(src).map_err(|e| format!("读取目录失败: {e}"))? {
-        let entry = entry.map_err(|e| format!("读取条目失败: {e}"))?;
-        let ty = entry.file_type().map_err(|e| format!("获取文件类型失败: {e}"))?;
-        let src_path = entry.path();
-        let dst_path = dst.join(entry.file_name());
-        if ty.is_dir() {
-            copy_dir_all(&src_path, &dst_path)?;
-        } else {
-            fs::copy(&src_path, &dst_path).map_err(|e| format!("复制文件失败: {e}"))?;
-        }
-    }
-    Ok(())
-}
-
 #[tauri::command]
 fn project_install(params: ProjectInstallParams) -> Result<BackendResult<serde_json::Value>, String> {
     ensure_base_dirs()?;
@@ -441,7 +689,7 @@ fn project_install(params: ProjectInstallParams) -> Result<BackendResult<serde_j
     }
     fs::create_dir_all(&to_dir).map_err(|e| format!("创建目标目录失败: {e}"))?;
 
-    copy_dir_all(&from_dir, &to_dir)?;
+    copy_dir_recursive(&from_dir, &to_dir).map_err(|e| format!("复制目录失败: {e}"))?;
 
     Ok(ok(serde_json::json!({
         "project": params.project_path,
@@ -450,7 +698,6 @@ fn project_install(params: ProjectInstallParams) -> Result<BackendResult<serde_j
     })))
 }
 
-/// 批量安装技能到项目
 /// 批量安装技能到项目（复制文件 + 创建 CLI 链接）
 #[tauri::command]
 fn install_skills_to_project(project_path: String, slugs: Vec<String>, clis: Vec<String>) -> Result<BackendResult<serde_json::Value>, String> {
@@ -458,7 +705,6 @@ fn install_skills_to_project(project_path: String, slugs: Vec<String>, clis: Vec
     let mut installed = Vec::new();
     let mut errors = Vec::new();
     
-    // 1. 复制技能文件到项目的 .skill-hub/skills/
     for slug in &slugs {
         let from_dir = skills_dir.join(slug);
         if !from_dir.exists() {
@@ -466,36 +712,11 @@ fn install_skills_to_project(project_path: String, slugs: Vec<String>, clis: Vec
             continue;
         }
         
-        // 目标目录：项目/.skill-hub/skills/<slug>
-        let hub_skills_dir = PathBuf::from(&project_path)
-            .join(".skill-hub")
-            .join("skills");
-        let to_dir = hub_skills_dir.join(slug);
-            
-        if to_dir.exists() {
-            if let Err(e) = fs::remove_dir_all(&to_dir) {
-                errors.push(format!("清理旧目录失败 {}: {}", slug, e));
-                continue;
-            }
-        }
-        
-        if let Err(e) = fs::create_dir_all(&to_dir) {
-            errors.push(format!("创建目录失败 {}: {}", slug, e));
-            continue;
-        }
-        
-        if let Err(e) = copy_dir_all(&from_dir, &to_dir) {
-            errors.push(format!("复制技能失败 {}: {}", slug, e));
-            continue;
-        }
-        
-        // 2. 为选中的 CLI 创建链接
+        // 直接复制到各 CLI 目录：项目/.{cli}/skills/<slug>
+        let mut cli_installed = false;
         for cli in &clis {
-            // 链接目标：项目/.skill-hub/<cli>/skills/<slug>
             let cli_skills_dir = PathBuf::from(&project_path)
-                .join(".skill-hub")
-                .join(cli)
-                .join("skills");
+                .join(format!(".{}/skills", cli));
             
             if let Err(e) = fs::create_dir_all(&cli_skills_dir) {
                 errors.push(format!("创建 CLI 目录失败 {}: {}", cli, e));
@@ -504,39 +725,22 @@ fn install_skills_to_project(project_path: String, slugs: Vec<String>, clis: Vec
             
             let link_target = cli_skills_dir.join(slug);
             
-            // 如果链接已存在，先删除
-            if link_target.exists() || link_target.is_symlink() {
-                let _ = fs::remove_dir_all(&link_target);
-            }
-            
-            // Windows 上创建 Junction
-            #[cfg(windows)]
-            {
-                let output = std::process::Command::new("cmd")
-                    .args(&[
-                        "/C", "mklink", "/J", 
-                        link_target.to_str().unwrap(), 
-                        to_dir.to_str().unwrap()
-                    ])
-                    .output();
-                
-                if let Err(e) = output {
-                    errors.push(format!("创建链接失败 {} -> {}: {}", cli, slug, e));
-                } else if !output.unwrap().status.success() {
-                    errors.push(format!("创建链接失败 {} -> {}", cli, slug));
+            if link_target.exists() {
+                if let Err(e) = fs::remove_dir_all(&link_target) {
+                    errors.push(format!("清理旧目录失败 {} -> {}: {}", cli, slug, e));
+                    continue;
                 }
             }
-            #[cfg(not(windows))]
-            {
-                // Unix 上的软链接
-                use std::os::unix::fs::symlink;
-                if let Err(e) = symlink(&to_dir, &link_target) {
-                    errors.push(format!("创建链接失败 {} -> {}: {}", cli, slug, e));
-                }
+            if let Err(e) = copy_dir_recursive(&from_dir, &link_target) {
+                errors.push(format!("复制技能到 CLI 失败 {} -> {}: {}", cli, slug, e));
+                continue;
             }
+            cli_installed = true;
         }
         
-        installed.push(slug.clone());
+        if cli_installed {
+            installed.push(slug.clone());
+        }
     }
     
     if errors.is_empty() {
@@ -586,7 +790,7 @@ fn open_path(path: String) -> Result<bool, String> {
 
 }
 
-/// 启用技能：将 Hub 技能复制到指定 CLI 目录
+/// 启用技能：将 Hub 技能链接（symlink 或复制）到指定 CLI 目录
 #[tauri::command]
 fn link_skill(cli: String, slug: String) -> Result<BackendResult<serde_json::Value>, String> {
     let hub_dir = crate::paths::skills_dir()?.join(&slug);
@@ -594,8 +798,13 @@ fn link_skill(cli: String, slug: String) -> Result<BackendResult<serde_json::Val
         return Ok(err(format!("技能不存在: {}", slug)));
     }
 
+    // 读取链接模式
+    let config: SkillHubConfig = read_json_file(&config_path()?);
+    let use_symlink = config.link_mode == "symlink";
+
     // 查找 CLI 的 skills 目录
     let cli_dir = PathBuf::from(crate::resolve_cli_path(&cli).ok_or_else(|| format!("CLI 目录不存在: {}", cli))?);
+    std::fs::create_dir_all(&cli_dir).map_err(|e| format!("创建 CLI skills 目录失败: {e}"))?;
     let target = cli_dir.join(&slug);
 
     // 如果已存在，先删除旧的
@@ -603,20 +812,36 @@ fn link_skill(cli: String, slug: String) -> Result<BackendResult<serde_json::Val
         std::fs::remove_dir_all(&target).map_err(|e| format!("清理目标失败: {e}"))?;
     }
 
-    // 递归复制整个目录
-    eprintln!("[link_skill] 复制 {:?} -> {:?}", hub_dir, target);
-    copy_dir_recursive(&hub_dir, &target)
-        .map_err(|e| format!("复制目录失败: {e}"))?;
+    if use_symlink {
+        // 创建符号链接
+        eprintln!("[link_skill] symlink {:?} -> {:?}", hub_dir, target);
+        #[cfg(target_os = "windows")]
+        {
+            std::os::windows::fs::symlink_dir(&hub_dir, &target)
+                .map_err(|e| format!("创建软链接失败（可能需要管理员权限或开启开发者模式）: {e}"))?;
+        }
+        #[cfg(not(target_os = "windows"))]
+        {
+            std::os::unix::fs::symlink(&hub_dir, &target)
+                .map_err(|e| format!("创建软链接失败: {e}"))?;
+        }
+    } else {
+        // 递归复制整个目录
+        eprintln!("[link_skill] 复制 {:?} -> {:?}", hub_dir, target);
+        copy_dir_recursive(&hub_dir, &target)
+            .map_err(|e| format!("复制目录失败: {e}"))?;
+    }
 
     Ok(ok(serde_json::json!({
         "cli": cli,
         "slug": slug,
-        "linked": true
+        "linked": true,
+        "mode": if use_symlink { "symlink" } else { "copy" }
     })))
 }
 
 /// 递归复制目录
-fn copy_dir_recursive(src: &PathBuf, dst: &PathBuf) -> std::io::Result<()> {
+pub(crate) fn copy_dir_recursive(src: &Path, dst: &Path) -> std::io::Result<()> {
     std::fs::create_dir_all(dst)?;
 
     for entry in std::fs::read_dir(src)? {
@@ -639,21 +864,140 @@ fn copy_dir_recursive(src: &PathBuf, dst: &PathBuf) -> std::io::Result<()> {
 /// 禁用技能：直接删除 CLI 目录中的技能副本
 #[tauri::command]
 fn unlink_skill(cli: String, slug: String) -> Result<BackendResult<serde_json::Value>, String> {
-    let cli_dir = PathBuf::from(crate::resolve_cli_path(&cli).ok_or_else(|| format!("CLI 目录不存在: {}", cli))?);
-    let target = cli_dir.join(&slug);
+    let mut removed = Vec::new();
+    let mut skipped = Vec::new();
 
-    if !target.exists() && !target.is_symlink() {
-        return Ok(err(format!("未找到技能: {} / {}", cli, slug)));
+    for cli_path in crate::cli_registry::existing_cli_paths(&cli) {
+        let target = PathBuf::from(&cli_path).join(&slug);
+        if target.exists() || target.is_symlink() {
+            eprintln!("[unlink_skill] 删除 {:?}", target);
+            match std::fs::remove_dir_all(&target) {
+                Ok(()) => removed.push(target.to_string_lossy().to_string()),
+                Err(e) => skipped.push(format!("{}: {}", target.to_string_lossy(), e)),
+            }
+        }
     }
 
-    eprintln!("[unlink_skill] 删除 {:?}", target);
-    std::fs::remove_dir_all(&target)
-        .map_err(|e| format!("删除失败: {e}"))?;
+    if removed.is_empty() {
+        Ok(err(format!("未找到技能: {} / {}", cli, slug)))
+    } else {
+        Ok(ok(serde_json::json!({
+            "cli": cli,
+            "slug": slug,
+            "linked": false,
+            "removed": removed,
+            "skipped": skipped
+        })))
+    }
+}
+
+/// 切换链接模式（symlink / copy），并批量转换已有的 CLI skills
+#[tauri::command]
+fn set_link_mode(mode: String) -> Result<BackendResult<serde_json::Value>, String> {
+    if mode != "symlink" && mode != "copy" {
+        return Ok(err(format!("无效的链接模式: {}，仅支持 symlink 或 copy", mode)));
+    }
+
+    let cfg_path = crate::paths::config_path()?;
+    let mut config: SkillHubConfig = read_json_file(&cfg_path);
+    let old_mode = config.link_mode.clone();
+    config.link_mode = mode.clone();
+    write_json_file(&cfg_path, &config)?;
+
+    eprintln!("[set_link_mode] {} -> {}", old_mode, mode);
+
+    // 如果模式没变，不需要转换
+    if old_mode == mode {
+        return Ok(ok(serde_json::json!({
+            "mode": mode,
+            "converted": 0,
+            "errors": []
+        })));
+    }
+
+    let hub_dir = crate::paths::skills_dir()?;
+    let use_symlink = mode == "symlink";
+
+    // 扫描所有已检测到的 CLI，找到所有已链接的 skills
+    let detected = crate::cli_registry::scan_all_clis();
+    let mut converted = 0;
+    let mut errors: Vec<String> = Vec::new();
+
+    for cli_row in &detected {
+        for cli_path in crate::cli_registry::existing_cli_paths(&cli_row.cli) {
+            let cli_skills_dir = PathBuf::from(&cli_path);
+            if !cli_skills_dir.exists() {
+                continue;
+            }
+
+            if let Ok(entries) = std::fs::read_dir(&cli_skills_dir) {
+                for entry in entries.flatten() {
+                    let target = entry.path();
+                    if !target.is_dir() && !target.is_symlink() {
+                        continue;
+                    }
+
+                    let slug = match target.file_name().and_then(|n| n.to_str()) {
+                        Some(s) => s.to_string(),
+                        None => continue,
+                    };
+
+                    let hub_skill_path = hub_dir.join(&slug);
+                    if !hub_skill_path.exists() {
+                        continue; // hub 里没有，跳过
+                    }
+
+                    let is_currently_symlink = crate::cli_registry::is_symlink_or_junction(&target);
+
+                    // 如果当前状态已经是目标模式，跳过
+                    if use_symlink == is_currently_symlink {
+                        continue;
+                    }
+
+                    // 删除旧的
+                    if let Err(e) = std::fs::remove_dir_all(&target) {
+                        errors.push(format!("{}/{}: 删除失败: {}", cli_row.cli, slug, e));
+                        continue;
+                    }
+
+                    if use_symlink {
+                        // 复制 → 软链接
+                        #[cfg(target_os = "windows")]
+                        {
+                            if let Err(e) = std::os::windows::fs::symlink_dir(&hub_skill_path, &target) {
+                                errors.push(format!("{}/{}: 创建软链接失败: {}", cli_row.cli, slug, e));
+                                // 回退为复制
+                                let _ = copy_dir_recursive(&hub_skill_path, &target);
+                                continue;
+                            }
+                        }
+                        #[cfg(not(target_os = "windows"))]
+                        {
+                            if let Err(e) = std::os::unix::fs::symlink(&hub_skill_path, &target) {
+                                errors.push(format!("{}/{}: 创建软链接失败: {}", cli_row.cli, slug, e));
+                                let _ = copy_dir_recursive(&hub_skill_path, &target);
+                                continue;
+                            }
+                        }
+                    } else {
+                        // 软链接 → 复制
+                        if let Err(e) = copy_dir_recursive(&hub_skill_path, &target) {
+                            errors.push(format!("{}/{}: 复制失败: {}", cli_row.cli, slug, e));
+                            continue;
+                        }
+                    }
+
+                    converted += 1;
+                    eprintln!("[set_link_mode] {} {}/{}", if use_symlink { "symlink" } else { "copy" }, cli_row.cli, slug);
+                }
+            }
+        }
+    }
 
     Ok(ok(serde_json::json!({
-        "cli": cli,
-        "slug": slug,
-        "linked": false
+        "mode": mode,
+        "converted": converted,
+        "errors": errors
     })))
 }
 
@@ -714,8 +1058,27 @@ fn delete_skill(slug: String) -> Result<BackendResult<serde_json::Value>, String
 
     write_json_file(&cfg_path, &config)?;
 
-    eprintln!("[delete_skill] 删除成功: {}", slug);
-    Ok(ok(serde_json::json!({ "slug": slug })))
+    // 清理所有 CLI 目录中的技能副本
+    let mut cli_removed: Vec<String> = Vec::new();
+    for (_cli_name, cli_paths) in &crate::get_cli_definitions() {
+        for cli_path_str in cli_paths {
+            let target = PathBuf::from(cli_path_str).join(&slug);
+            if target.exists() || target.is_symlink() {
+                eprintln!("[delete_skill] 清理 CLI 副本: {:?}", target);
+                if let Err(e) = std::fs::remove_dir_all(&target) {
+                    eprintln!("[delete_skill] 清理失败 {:?}: {}", target, e);
+                } else {
+                    cli_removed.push(target.to_string_lossy().to_string());
+                }
+            }
+        }
+    }
+
+    eprintln!("[delete_skill] 删除成功: {} (CLI 清理: {:?})", slug, cli_removed);
+    Ok(ok(serde_json::json!({
+        "slug": slug,
+        "cli_cleaned": cli_removed
+    })))
 }
 
 /// 从 Git URL 导入技能
@@ -855,8 +1218,9 @@ fn import_skill_folder(source: &std::path::Path) -> Result<BackendResult<serde_j
     }
 
     // 复制整个文件夹
-    copy_dir_all(source, &target_dir)
+    copy_dir_recursive(source, &target_dir)
         .map_err(|e| format!("复制文件夹失败: {e}"))?;
+    ensure_standard_skill_md_name(&target_dir)?;
 
     Ok(ok(serde_json::json!({
         "type": "skill",
@@ -1169,7 +1533,57 @@ fn generate_single_summary(slug: &str) -> Result<BackendResult<serde_json::Value
 
 
 
-/// List all files in a skill directory (multi-file skill support)
+//// Fetch skill detail HTML from skills.sh and extract Summary section
+#[tauri::command]
+fn fetch_skill_summary(skill_id: String) -> Result<String, String> {
+    let url = format!("https://skills.sh/{}", skill_id);
+    let response = reqwest::blocking::get(&url)
+        .map_err(|e| format!("HTTP request failed: {}", e))?;
+
+    if !response.status().is_success() {
+        return Err(format!("HTTP {} error", response.status()));
+    }
+
+    let html = response.text().map_err(|e| format!("Failed to read response: {}", e))?;
+
+    // 查找 SUMMARY 标题的多种可能形式
+    let summary_patterns = ["SUMMARY", "Summary", "summary"];
+    let mut content_start_opt = None;
+
+    for pattern in &summary_patterns {
+        if let Some(pos) = html.find(pattern) {
+            // 往后找到闭合标签
+            if let Some(close_pos) = html[pos..].find('>') {
+                content_start_opt = Some(pos + close_pos + 1);
+                break;
+            }
+        }
+    }
+
+    if let Some(content_start) = content_start_opt {
+        // 查找下一个标题（h1/h2/h3）或者取到结尾
+        let remaining = &html[content_start..];
+        let end_markers = ["<h1", "<h2", "<h3", "<H1", "<H2", "<H3"];
+
+        let mut content_end = remaining.len();
+        for marker in &end_markers {
+            if let Some(pos) = remaining.find(marker) {
+                if pos < content_end {
+                    content_end = pos;
+                }
+            }
+        }
+
+        let summary_html = remaining[..content_end].trim();
+        if !summary_html.is_empty() {
+            return Ok(summary_html.to_string());
+        }
+    }
+
+    Err("Summary section not found in HTML".to_string())
+}
+
+// List all files in a skill directory (multi-file skill support)
 #[tauri::command]
 fn list_skill_files(slug: String) -> Result<Vec<serde_json::Value>, String> {
     let skills_dir = crate::paths::skills_dir()?;
@@ -1215,9 +1629,9 @@ fn walk_skill_dir(
 fn read_skill_file(slug: String, relative_path: String) -> Result<Option<String>, String> {
     let skills_dir = crate::paths::skills_dir()?;
     let skill_path = skills_dir.join(&slug);
-    let full = skill_path.join(&relative_path);
-    // Safety: prevent path traversal
-    if !full.starts_with(&skill_path) { return Ok(None); }
+    let Some(full) = safe_skill_child_path(&skill_path, &relative_path) else {
+        return Ok(None);
+    };
     if !full.exists() || full.is_dir() { return Ok(None); }
     std::fs::read_to_string(&full).map(Some).map_err(|e| format!("read failed: {e}"))
 }
@@ -1227,8 +1641,9 @@ fn read_skill_file(slug: String, relative_path: String) -> Result<Option<String>
 fn write_skill_file(slug: String, relative_path: String, content: String) -> Result<bool, String> {
     let skills_dir = crate::paths::skills_dir()?;
     let skill_path = skills_dir.join(&slug);
-    let full = skill_path.join(&relative_path);
-    if !full.starts_with(&skill_path) { return Ok(false); }
+    let Some(full) = safe_skill_child_path(&skill_path, &relative_path) else {
+        return Ok(false);
+    };
     if let Some(parent) = full.parent() {
         std::fs::create_dir_all(parent).map_err(|e| format!("mkdir failed: {e}"))?;
     }
@@ -1241,11 +1656,12 @@ fn write_skill_file(slug: String, relative_path: String, content: String) -> Res
 fn delete_skill_file(slug: String, relative_path: String) -> Result<bool, String> {
     let skills_dir = crate::paths::skills_dir()?;
     let skill_path = skills_dir.join(&slug);
-    if relative_path.is_empty() || relative_path == "." || relative_path == "SKILL.md" {
+    if relative_path.is_empty() || relative_path == "." || relative_path.eq_ignore_ascii_case("SKILL.md") {
         return Ok(false);
     }
-    let full = skill_path.join(&relative_path);
-    if !full.starts_with(&skill_path) { return Ok(false); }
+    let Some(full) = safe_skill_child_path(&skill_path, &relative_path) else {
+        return Ok(false);
+    };
     if full.exists() {
         if full.is_dir() {
             std::fs::remove_dir_all(&full).map_err(|e| format!("remove dir failed: {e}"))?;
@@ -1601,6 +2017,30 @@ fn delete_rule(slug: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn rename_rule(old_slug: String, new_name: String) -> Result<serde_json::Value, String> {
+    let dir = crate::paths::rules_dir()?;
+    let old_path = dir.join(format!("{}.md", old_slug));
+    if !old_path.exists() {
+        return Err(format!("规则不存在: {}", old_slug));
+    }
+    let new_slug = new_name.trim().to_lowercase().replace(' ', "-");
+    if new_slug.is_empty() || new_slug == old_slug {
+        return Err(format!("新名称无效或与当前名称相同"));
+    }
+    let new_path = dir.join(format!("{}.md", new_slug));
+    if new_path.exists() {
+        return Err(format!("目标名称已存在: {}", new_slug));
+    }
+    std::fs::rename(&old_path, &new_path).map_err(|e| format!("重命名失败: {e}"))?;
+    Ok(serde_json::json!({
+        "oldSlug": old_slug,
+        "newSlug": new_slug,
+        "newName": new_name.trim(),
+        "path": new_path.to_string_lossy()
+    }))
+}
+
+#[tauri::command]
 fn link_rule(slug: String, cli: String) -> Result<String, String> {
     let source = crate::paths::rules_dir()?.join(format!("{}.md", slug));
     if !source.exists() { return Err(format!("rule not found: {}", slug)); }
@@ -1701,19 +2141,32 @@ pub fn run() {
             git_import,
             import_local,
 
+            fetch_skill_summary,
             ai_summarize,
 
+            // Skill file operations
+            list_skill_files,
+            read_skill_file,
+            write_skill_file,
+            delete_skill_file,
+            scan_skill_safety,
+            export_skill,
 
+            // Market API
+            search_skills_market,
+            install_from_market,
 
             install_skills_to_project,
 
             set_visible_clis,
+            set_link_mode,
 
             list_rules,
             read_rule,
             write_rule,
             create_rule,
             delete_rule,
+            rename_rule,
             link_rule,
             unlink_rule,
             get_cli_rule_status

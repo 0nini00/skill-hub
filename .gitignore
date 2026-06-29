@@ -8,6 +8,7 @@ release-slim/
 packaged/
 
 .async/
+.claude/
 .codex/
 .skill-hub/
 

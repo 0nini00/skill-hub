@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Skill Hub",
-  "version": "0.1.3",
+  "version": "1.0.6",
   "identifier": "com.skillhub.desktop",
   "build": {
     "frontendDist": "../dist/renderer",

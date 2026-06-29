@@ -8,7 +8,7 @@ interface RuleEditorProps {
   content: string;
   isNew: boolean;
   onBack(): void;
-  onSave(slug: string, content: string): Promise<void>;
+  onSave(oldSlug: string, slug: string, content: string, newName?: string): Promise<void>;
   onDelete(slug: string): Promise<void>;
 }
 
@@ -26,8 +26,10 @@ export function RuleEditor({ name, slug, content, isNew, onBack, onSave, onDelet
     if (!ruleName.trim()) { alert("请输入规则名称"); return; }
     setSaving(true);
     try {
-      const s = isNew ? ruleName.trim().toLowerCase().replace(/\s+/g, "-") : slug;
-      await onSave(s, text);
+      const newSlug = ruleName.trim().toLowerCase().replace(/\s+/g, "-");
+      const s = isNew ? newSlug : slug;
+      const changedName = !isNew && ruleName.trim() !== name ? ruleName.trim() : undefined;
+      await onSave(slug, s, text, changedName);
       setSaving(false);
       onBack();
     } catch (e) {
@@ -52,16 +54,12 @@ export function RuleEditor({ name, slug, content, isNew, onBack, onSave, onDelet
         <div className="rule-editor-toolbar">
           <Button icon={<ArrowLeft size={16} />} onClick={onBack}>返回</Button>
           <div className="rule-editor-title">
-            {isNew ? (
               <input
                 className="text-input rule-name-input"
                 value={ruleName}
                 onChange={(e) => setRuleName(e.target.value)}
-                placeholder="规则名称"
+                placeholder={isNew ? "规则名称" : name}
               />
-            ) : (
-              <strong>{name}.md</strong>
-            )}
           </div>
           <Button icon={<Save size={16} />} variant="primary" onClick={handleSave} disabled={saving}>
             {saving ? "保存中..." : "保存"}
