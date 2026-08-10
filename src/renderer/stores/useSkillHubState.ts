@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import type { AppState, BackendResult, SkillRow } from "@shared/types/skill";
-import { inferSkillCategory } from "@shared/constants/categories";
+import type { AppState, SkillRow } from "@shared/types/skill";
 import { skillHubApi } from "../services/skillHubApi";
 
 interface SkillHubState {
@@ -11,11 +10,8 @@ interface SkillHubState {
   visibleSkills: SkillRow[];
   hiddenSkills: SkillRow[];
   refresh(): Promise<void>;
-  runAndRefresh(args: string[], successMessage: SuccessMessage): Promise<BackendResult>;
   setStatus(message: string): void;
 }
-
-export type SuccessMessage = string | ((result: BackendResult) => string);
 
 const emptyState: AppState = {
   skills: [],
@@ -35,13 +31,10 @@ export function useSkillHubState(): SkillHubState {
     setStatus("正在同步");
     try {
       const next = await skillHubApi.getAppState();
-      const skills = next.skills.map((row) => ({
-        ...row,
-        category: inferSkillCategory(row),
-      }));
-      setState({ ...next, skills });
-      const hiddenCount = skills.filter((row) => row.hidden).length;
-      setStatus(`已就绪: ${skills.length} 个技能${hiddenCount ? `，隐藏 ${hiddenCount} 个` : ""}`);
+      // category 已由后端在 build_app_state 中推断并返回,前端无需再逐项计算
+      setState(next);
+      const hiddenCount = next.skills.filter((row) => row.hidden).length;
+      setStatus(`已就绪: ${next.skills.length} 个技能${hiddenCount ? `，隐藏 ${hiddenCount} 个` : ""}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "同步失败";
       setError(message);
@@ -50,40 +43,6 @@ export function useSkillHubState(): SkillHubState {
       setLoading(false);
     }
   }, []);
-
-  const runAndRefresh = useCallback(
-    async (args: string[], successMessage: SuccessMessage) => {
-      setLoading(true);
-      setError("");
-      setStatus("正在处理");
-      try {
-        const result = await skillHubApi.runBackend(args);
-        if (!result.ok) {
-          const message = result.message || "操作失败";
-          setError(message);
-          setStatus(message);
-          return result;
-        }
-        await refresh();
-        setStatus(typeof successMessage === "function" ? successMessage(result) : successMessage);
-        return result;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "操作失败";
-        setError(message);
-        setStatus(message);
-        return {
-          ok: false,
-          data: null,
-          stdout: "",
-          stderr: message,
-          message,
-        };
-      } finally {
-        setLoading(false);
-      }
-    },
-    [refresh],
-  );
 
   const visibleSkills = useMemo(() => state.skills.filter((row) => !row.hidden), [state.skills]);
   const hiddenSkills = useMemo(() => state.skills.filter((row) => row.hidden), [state.skills]);
@@ -96,7 +55,6 @@ export function useSkillHubState(): SkillHubState {
     visibleSkills,
     hiddenSkills,
     refresh,
-    runAndRefresh,
     setStatus,
   };
 }

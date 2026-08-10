@@ -45,10 +45,16 @@ pub struct BackendResult<T> {
     pub message: Option<String>,
 }
 
+/// 自定义 CLI：cli_id -> 用户配置的目录列表（每个目录自动推导 skills/rules 路径）
+pub type CustomCliMap = std::collections::HashMap<String, Vec<String>>;
+
 /// Skill Hub 配置（~/.config/skill-hub/config.json）
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SkillHubConfig {
-    pub custom_clis: Option<serde_json::Value>,
+    /// 自定义 CLI：cli_id -> 目录列表。目录可为 CLI 根目录或 skills 目录，
+    /// 读取时自动推导 skills 候选（{dir}/skills 与 {dir}）。仅参与技能识别，不参与规则管理。
+    #[serde(default)]
+    pub custom_clis: CustomCliMap,
     pub visible_clis: Option<Vec<String>>,
     /// 隐藏的技能 slug 列表
     #[serde(default)]
@@ -65,7 +71,7 @@ fn default_link_mode() -> String {
 impl Default for SkillHubConfig {
     fn default() -> Self {
         Self {
-            custom_clis: None,
+            custom_clis: CustomCliMap::new(),
             visible_clis: None,
             hidden_skills: Vec::new(),
             link_mode: default_link_mode(),
@@ -82,9 +88,3 @@ pub struct AiConfig {
     pub proxy: Option<String>,
 }
 
-/// 项目安装参数
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ProjectInstallParams {
-    pub project_path: String,
-    pub slug: String,
-}

@@ -1,6 +1,10 @@
+import DOMPurify from "dompurify";
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { marked } from "marked";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/Button";
+import { useConfirm } from "../ui/ConfirmDialog";
+import { useToast } from "../ui/Toast";
 
 interface RuleEditorProps {
   name: string;
@@ -16,14 +20,25 @@ export function RuleEditor({ name, slug, content, isNew, onBack, onSave, onDelet
   const [text, setText] = useState(content);
   const [ruleName, setRuleName] = useState(name);
   const [saving, setSaving] = useState(false);
+  const toast = useToast();
+  const confirm = useConfirm();
 
   useEffect(() => {
     setText(content);
     setRuleName(name);
   }, [content, name]);
 
+  // marked 渲染 + DOMPurify 消毒，防止注入脚本
+  const previewHtml = useMemo(() => {
+    const raw = marked.parse(text || "", { gfm: true, breaks: true }) as string;
+    return DOMPurify.sanitize(raw);
+  }, [text]);
+
   async function handleSave() {
-    if (!ruleName.trim()) { alert("请输入规则名称"); return; }
+    if (!ruleName.trim()) {
+      toast("请输入规则名称", "info");
+      return;
+    }
     setSaving(true);
     try {
       const newSlug = ruleName.trim().toLowerCase().replace(/\s+/g, "-");
@@ -31,20 +46,27 @@ export function RuleEditor({ name, slug, content, isNew, onBack, onSave, onDelet
       const changedName = !isNew && ruleName.trim() !== name ? ruleName.trim() : undefined;
       await onSave(slug, s, text, changedName);
       setSaving(false);
+      toast(isNew ? "规则已创建" : "规则已保存", "success");
       onBack();
     } catch (e) {
       setSaving(false);
-      alert("保存失败: " + e);
+      toast(`保存失败: ${e}`, "error");
     }
   }
 
   async function handleDelete() {
-    const ok = window.confirm("确定要删除此规则吗？");
+    const ok = await confirm({
+      title: "删除规则",
+      message: "确定要删除此规则吗？",
+      confirmLabel: "删除",
+      danger: true,
+    });
     if (!ok) return;
     try {
       await onDelete(slug);
+      toast("规则已删除", "success");
     } catch (e) {
-      alert("删除失败: " + e);
+      toast(`删除失败: ${e}`, "error");
     }
   }
 
@@ -83,16 +105,7 @@ export function RuleEditor({ name, slug, content, isNew, onBack, onSave, onDelet
             <div className="pane-title">预览</div>
             <div
               className="markdown-preview"
-              dangerouslySetInnerHTML={{
-                __html: text
-                  .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-                  .replace(/^## (.+)$/gm, "<h2>$1</h2>")
-                  .replace(/^# (.+)$/gm, "<h1>$1</h1>")
-                  .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-                  .replace(/\*(.+?)\*/g, "<em>$1</em>")
-                  .replace(/`(.+?)`/g, "<code>$1</code>")
-                  .replace(/\n/g, "<br>"),
-              }}
+              dangerouslySetInnerHTML={{ __html: previewHtml }}
             />
           </div>
         </div>

@@ -1,46 +1,25 @@
-import { FileUp, Link2, Network } from "lucide-react";
-import { useEffect, useState } from "react";
-import type { BackendResult } from "@shared/types/skill";
+import { FileUp, Link2 } from "lucide-react";
+import { useState } from "react";
 import { skillHubApi } from "../../services/skillHubApi";
 import { Button } from "../ui/Button";
 import { TextInput } from "../ui/TextInput";
+import { useToast } from "../ui/Toast";
 
 interface MarketPageProps {
   onRefreshApp(): void;
-  onStatus(message: string): void;
-  onRun(args: string[], successMessage: string | ((result: BackendResult) => string)): Promise<BackendResult>;
 }
 
 type TabId = "git" | "local";
 
-export function MarketPage({ onRefreshApp, onStatus }: MarketPageProps) {
+export function MarketPage({ onRefreshApp }: MarketPageProps) {
   const [activeTab, setActiveTab] = useState<TabId>("git");
   const [repoUrl, setRepoUrl] = useState("");
-  const [proxy, setProxy] = useState("");
-
-  useEffect(() => {
-    skillHubApi.getAiConfig().then((config) => {
-      setProxy(config.proxy ?? "");
-    }).catch((err) => {
-      console.error("getAiConfig error:", err);
-    });
-  }, []);
-
-  async function saveProxy() {
-    const config = await skillHubApi.getAiConfig();
-    const result = await skillHubApi.setAiConfig({
-      api_url: config.api_url ?? "",
-      api_key: config.api_key ?? "",
-      model: config.model ?? "",
-      proxy: proxy.trim(),
-    });
-    onStatus(result.ok ? "网络代理已保存" : result.message || "网络代理保存失败");
-  }
+  const toast = useToast();
 
   async function installUrl() {
     const url = repoUrl.trim();
     if (!url) {
-      onStatus("请填写 Git 仓库链接");
+      toast("请填写 Git 仓库链接", "info");
       return;
     }
 
@@ -48,13 +27,13 @@ export function MarketPage({ onRefreshApp, onStatus }: MarketPageProps) {
       const result = await skillHubApi.gitImport(url);
       if (result.ok) {
         setRepoUrl("");
-        onStatus(`技能「${result.data?.slug}」已导入`);
+        toast(`技能「${result.data?.slug}」已导入`, "success");
         onRefreshApp();
       } else {
-        onStatus(result.message || result.stderr || "导入失败");
+        toast(result.message || result.stderr || "导入失败", "error");
       }
     } catch (e: any) {
-      onStatus(`导入失败: ${e.message || e}`);
+      toast(`导入失败: ${e.message || e}`, "error");
     }
   }
 
@@ -64,44 +43,45 @@ export function MarketPage({ onRefreshApp, onStatus }: MarketPageProps) {
       if (result.ok) {
         const { type, name } = result.data || {};
         if (type === "skill") {
-          onStatus(`Skill「${name}」已导入`);
+          toast(`Skill「${name}」已导入`, "success");
         } else if (type === "rule") {
-          onStatus(`Rule「${name}」已导入`);
+          toast(`Rule「${name}」已导入`, "success");
         } else {
-          onStatus("导入成功");
+          toast("导入成功", "success");
         }
         onRefreshApp();
       } else {
-        onStatus(result.message || "导入失败");
+        toast(result.message || "导入失败", "error");
       }
     } catch (e: any) {
-      onStatus(`导入失败: ${e.message || e}`);
+      toast(`导入失败: ${e.message || e}`, "error");
     }
   }
 
   return (
     <div className="page-stack">
       {/* 标签页导航 */}
-      <div style={{
-        display: "flex",
-        gap: "8px",
-        padding: "16px 24px 0",
-        borderBottom: "1px solid #333",
-      }}>
-        <TabButton
-          active={activeTab === "git"}
+      <div className="import-tabs" role="tablist">
+        <button
+          role="tab"
+          aria-selected={activeTab === "git"}
+          className={`tab-button ${activeTab === "git" ? "active" : ""}`}
           onClick={() => setActiveTab("git")}
-          icon={<Link2 size={16} />}
+          type="button"
         >
+          <Link2 size={16} aria-hidden="true" />
           Git 导入
-        </TabButton>
-        <TabButton
-          active={activeTab === "local"}
+        </button>
+        <button
+          role="tab"
+          aria-selected={activeTab === "local"}
+          className={`tab-button ${activeTab === "local" ? "active" : ""}`}
           onClick={() => setActiveTab("local")}
-          icon={<FileUp size={16} />}
+          type="button"
         >
+          <FileUp size={16} aria-hidden="true" />
           本地导入
-        </TabButton>
+        </button>
       </div>
 
       {/* 标签页内容 */}
@@ -127,23 +107,6 @@ export function MarketPage({ onRefreshApp, onStatus }: MarketPageProps) {
             </div>
           </div>
 
-          <div className="proxy-strip">
-            <div className="proxy-strip-title">
-              <span className="card-icon small-card-icon"><Network size={15} /></span>
-              <div>
-                <strong>网络代理</strong>
-                <span>用于 Git 下载和摘要请求</span>
-              </div>
-            </div>
-            <div className="proxy-strip-control">
-              <TextInput
-                value={proxy}
-                onChange={(event) => setProxy(event.target.value)}
-                placeholder="http://127.0.0.1:7890"
-              />
-              <Button onClick={saveProxy}>保存</Button>
-            </div>
-          </div>
         </section>
       )}
 
@@ -166,47 +129,5 @@ export function MarketPage({ onRefreshApp, onStatus }: MarketPageProps) {
         </section>
       )}
     </div>
-  );
-}
-
-interface TabButtonProps {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}
-
-function TabButton({ active, onClick, icon, children }: TabButtonProps) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        padding: "8px 16px",
-        background: active ? "#2a2a2a" : "transparent",
-        color: active ? "#fff" : "#888",
-        border: "none",
-        borderBottom: active ? "2px solid #4a9eff" : "2px solid transparent",
-        cursor: "pointer",
-        fontSize: "14px",
-        fontWeight: active ? 600 : 400,
-        display: "flex",
-        alignItems: "center",
-        gap: "6px",
-        transition: "all 0.2s",
-      }}
-      onMouseEnter={(e) => {
-        if (!active) {
-          e.currentTarget.style.color = "#ccc";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!active) {
-          e.currentTarget.style.color = "#888";
-        }
-      }}
-    >
-      {icon}
-      {children}
-    </button>
   );
 }

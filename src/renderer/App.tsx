@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { AppShell, type ViewId } from "./components/layout/AppShell";
+import { Skeleton } from "./components/ui/Skeleton";
 import { MarketPage } from "./components/prompt/MarketPage";
 import { ProjectInstallPage } from "./components/folder/ProjectInstallPage";
 import { SettingsPageV2 } from "./components/settings/SettingsPageV2";
 import { SkillMatrix } from "./components/skill/SkillMatrix";
 import { RulesPageV2 } from "./components/rule/RulesPageV2";
+import type { AiConfig } from "@shared/types/skill";
 import { skillHubApi } from "./services/skillHubApi";
 import { useSkillHubState } from "./stores/useSkillHubState";
 
@@ -18,6 +20,7 @@ const viewTitles: Record<ViewId, string> = {
 
 export function App() {
   const [view, setView] = useState<ViewId>("skills");
+  const [aiConfig, setAiConfig] = useState<AiConfig>({});
   const {
     state,
     loading,
@@ -26,7 +29,6 @@ export function App() {
     visibleSkills,
     hiddenSkills,
     refresh,
-    runAndRefresh,
     setStatus,
   } = useSkillHubState();
 
@@ -35,25 +37,44 @@ export function App() {
     ? state.visibleClis
     : state.detectedClis.map(c => c.cli);
   const coreDetectedClis = state.detectedClis.filter(cli => visibleCliNames.includes(cli.cli));
-  const coreVisibleClis = state.visibleClis.length > 0
-    ? state.visibleClis.filter(cli => visibleCliNames.includes(cli))
-    : state.detectedClis.map(c => c.cli);
+  // 稳定引用:避免每次渲染生成新数组导致 SettingsPageV2 的同步 effect 反复触发
+  const detectedCliNames = useMemo(() => state.detectedClis.map(c => c.cli), [state.detectedClis]);
 
   useEffect(() => {
     refresh();
   }, [refresh]);
 
+  // AI 配置全局只加载一次，MarketPage / SettingsPageV2 共享，保存后同步
+  useEffect(() => {
+    skillHubApi.getAiConfig().then(setAiConfig).catch((err) => {
+      console.error("getAiConfig error:", err);
+    });
+  }, []);
+
   const title = useMemo(() => viewTitles[view], [view]);
 
   async function summarizeCurrentView() {
-    setStatus("正在生成 AI 摘要...");
-    try {
-      await skillHubApi.aiSummarize("", "");
-      setStatus("AI 摘要生成完成");
-      await refresh();
-    } catch (e: any) {
-      setStatus(`AI 摘要失败: ${e.message || e}`);
+    const targets = state.skills.filter((row) => !row.missing);
+    if (!targets.length) {
+      setStatus("没有可生成摘要的技能");
+      return;
     }
+    setStatus(`正在生成 AI 摘要 (0/${targets.length})...`);
+    let success = 0;
+    const failed: string[] = [];
+    for (let i = 0; i < targets.length; i++) {
+      const row = targets[i];
+      setStatus(`正在为「${row.name}」生成摘要 (${i + 1}/${targets.length})...`);
+      try {
+        await skillHubApi.aiSummarize(row.slug, "");
+        success += 1;
+      } catch (e: any) {
+        failed.push(`${row.name}${e?.message ? `: ${e.message}` : ""}`);
+      }
+    }
+    const failText = failed.length ? `，失败 ${failed.length} 个${failed.length <= 3 ? `（${failed.join("，")}）` : ""}` : "";
+    setStatus(`AI 摘要完成: ${success}/${targets.length} 成功${failText}`);
+    await refresh();
   }
 
   return (
@@ -68,30 +89,26 @@ export function App() {
       onRefresh={refresh}
       onSummarize={summarizeCurrentView}
     >
-      {view === "skills" ? (
+      {/* 首次加载：后端 get_app_state 全量构建期间显示骨架屏，不阻塞 UI 交互 */}
+      {loading && !state.skills.length ? (
+        <Skeleton />
+      ) : view === "skills" ? (
         <SkillMatrix
           skills={visibleSkills}
           hiddenSkills={hiddenSkills}
           detectedClis={coreDetectedClis}
-          visibleClis={coreVisibleClis}
           onRefresh={refresh}
-          onRun={runAndRefresh}
         />
       ) : null}
 
       {view === "market" ? (
-        <MarketPage
-          onRefreshApp={refresh}
-          onStatus={setStatus}
-          onRun={runAndRefresh}
-        />
+        <MarketPage onRefreshApp={refresh} />
       ) : null}
 
       {view === "project" ? (
         <ProjectInstallPage
           skills={visibleSkills}
           detectedClis={coreDetectedClis}
-          onRun={runAndRefresh}
           onStatus={setStatus}
         />
       ) : null}
@@ -99,15 +116,18 @@ export function App() {
       {view === "rules" ? (
         <RulesPageV2
           detectedClis={coreDetectedClis}
-          visibleClis={coreVisibleClis}
           onRefresh={refresh}
-          onRun={runAndRefresh}
         />
       ) : null}
 
       {view === "settings" ? (
         <SettingsPageV2
           onStatus={setStatus}
+          detectedClis={detectedCliNames}
+          visibleClis={state.visibleClis}
+          onRefresh={refresh}
+          aiConfig={aiConfig}
+          onAiConfigChange={setAiConfig}
         />
       ) : null}
     </AppShell>

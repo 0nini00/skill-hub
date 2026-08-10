@@ -10,12 +10,6 @@ export interface RuleRow {
   cliOwner?: string; // 如果是原生文件，属于哪个 CLI
 }
 
-export interface RuleFolder {
-  name: string;
-  path: string;
-  rules: RuleRow[];
-}
-
 export interface CliRuleStatus {
   cli: string;
   currentRule: RuleRow | null; // 当前启用的规则

@@ -1,4 +1,4 @@
-import { FolderInput, PackageCheck, Search } from "lucide-react";
+import { FolderInput, PackageCheck } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { CliRow, SkillRow } from "@shared/types/skill";
 import { skillHubApi } from "../../services/skillHubApi";
@@ -9,7 +9,6 @@ import { TextInput } from "../ui/TextInput";
 interface ProjectInstallPageProps {
   skills: SkillRow[];
   detectedClis: CliRow[];
-  onRun(args: string[], successMessage: string): Promise<unknown>;
   onStatus(message: string): void;
 }
 
@@ -93,7 +92,7 @@ export function ProjectInstallPage({ skills, detectedClis, onStatus }: ProjectIn
 
         <div className="project-section-block">
           <div className="project-skill-toolbar">
-            <TextInput label="筛选技能" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索技能" />
+            <TextInput value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索技能" />
             <Button onClick={() => setSelectedSkills(filteredSkills.map((row) => row.slug))}>全选</Button>
             <Button onClick={() => setSelectedSkills([])}>清空</Button>
             <span className="toolbar-count">已选 {selectedSkills.length} / {filteredSkills.length}</span>
@@ -115,8 +114,7 @@ export function ProjectInstallPage({ skills, detectedClis, onStatus }: ProjectIn
                     }}
                   />
                   <div>
-                    <strong>{row.name}</strong>
-                    <p>{row.summary || "暂无摘要"}</p>
+                    <strong title={row.name}>{row.name}</strong>
                   </div>
                 </label>
               );
